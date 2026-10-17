@@ -1,0 +1,6 @@
+[alias]
+migration = ["run", "--", "toasty", "migration", "generate"]
+migrate = ["migration"]
+m = ["migration"]
+apply = ["run", "--", "toasty", "migration", "apply"]
+a = ["apply"]

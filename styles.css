@@ -1,0 +1,50 @@
+@import "tailwindcss";
+@import "./.cargo/build-assets/daisyui.css";
+
+/* Scan the Rust sources for Tailwind and daisyUI classes. */
+@source "./src/**/*.rs";
+
+/* Dark mode follows the active daisyUI theme. */
+/*@custom-variant dark (&:where([data-theme=serverz], [data-theme=serverz] *));*/
+
+/* Custom theme variables for the vendored DaisyUI stylesheet. */
+:root {
+  color-scheme: dark;
+  --color-base-100: oklch(14% 0 0);
+  --color-base-200: oklch(20% 0 0);
+  --color-base-300: oklch(26% 0 0);
+  --color-base-content: oklch(97% 0 0);
+  --color-primary: oklch(36.3% 0.229 30.7);
+  --color-primary-content: oklch(98% 0.001 106.423);
+  --color-secondary: oklch(42% 0.199 265.638);
+  --color-secondary-content: oklch(97% 0.013 236.62);
+  --color-accent: oklch(31.1% 0.264 317.2);
+  --color-accent-content: oklch(97% 0.014 254.604);
+  --color-neutral: oklch(43% 0 0);
+  --color-neutral-content: oklch(98% 0 0);
+  --color-info: oklch(68% 0.169 237.323);
+  --color-info-content: oklch(97% 0.013 236.62);
+  --color-success: oklch(72% 0.219 149.579);
+  --color-success-content: oklch(98% 0.018 155.826);
+  --color-warning: oklch(79% 0.184 86.047);
+  --color-warning-content: oklch(98% 0.026 102.212);
+  --color-error: oklch(63% 0.237 25.331);
+  --color-error-content: oklch(97% 0.013 17.38);
+  --radius-selector: 2rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+@layer base {
+  body {
+    min-height: 100vh;
+    background-color: var(--color-base-100);
+    color: var(--color-base-content);
+    font-family: var(--default-font-family, ui-sans-serif, system-ui, sans-serif);
+  }
+}
