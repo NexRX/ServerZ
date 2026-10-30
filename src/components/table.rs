@@ -6,21 +6,11 @@ use topcoat::{
 
 #[component]
 pub async fn table(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(
-        view! { <div class="overflow-x-auto"><table class=(class!("table", attrs.remove("class"))) (attrs)>(child)</table></div> },
-    )
-}
-
-#[component]
-pub async fn table_typed(
-    size: ComponentSize,
-    style: ComponentStyle,
-    zebra: bool,
-    pin_rows: bool,
-    pin_cols: bool,
+    #[default] size: ComponentSize,
+    #[default] style: ComponentStyle,
+    #[default] zebra: bool,
+    #[default] pin_rows: bool,
+    #[default] pin_cols: bool,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

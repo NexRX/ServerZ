@@ -5,15 +5,7 @@ use topcoat::{
 
 #[component]
 pub async fn fab(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <div class=(class!("fab", attrs.remove("class"))) (attrs)>(child)</div> })
-}
-
-#[component]
-pub async fn fab_typed(
-    flower: bool,
+    #[default] flower: bool,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -23,7 +15,7 @@ pub async fn fab_typed(
 
 #[component]
 pub async fn fab_action(
-    label: String,
+    #[default] label: String,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -34,7 +26,7 @@ pub async fn fab_action(
 
 #[component]
 pub async fn fab_tooltip(
-    label: String,
+    #[default] label: String,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

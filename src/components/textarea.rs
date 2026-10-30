@@ -5,12 +5,7 @@ use topcoat::{
 };
 
 #[component]
-pub async fn textarea(#[default] mut attrs: Attributes) -> Result<impl View> {
-    Ok(view! { <textarea class=(class!("textarea", attrs.remove("class"))) (attrs)></textarea> })
-}
-
-#[component]
-pub async fn textarea_typed(
+pub async fn textarea(
     color: ComponentColor,
     size: ComponentSize,
     variant: ComponentVariant,

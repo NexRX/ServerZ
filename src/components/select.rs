@@ -6,14 +6,6 @@ use topcoat::{
 
 #[component]
 pub async fn select(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <select class=(class!("select", attrs.remove("class"))) (attrs)>(child)</select> })
-}
-
-#[component]
-pub async fn select_typed(
     color: ComponentColor,
     size: ComponentSize,
     variant: ComponentVariant,

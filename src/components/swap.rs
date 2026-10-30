@@ -5,18 +5,9 @@ use topcoat::{
 
 #[component]
 pub async fn swap(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(
-        view! { <label class=(class!("swap", attrs.remove("class"))) (attrs)><input type="checkbox">(child)</label> },
-    )
-}
-#[component]
-pub async fn swap_typed(
-    rotate: bool,
-    flip: bool,
-    active: bool,
+    #[default] rotate: bool,
+    #[default] flip: bool,
+    #[default] active: bool,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

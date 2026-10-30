@@ -5,14 +5,7 @@ use topcoat::{
 };
 
 #[component]
-pub async fn radio(name: String, #[default] mut attrs: Attributes) -> Result<impl View> {
-    Ok(
-        view! { <input type="radio" name=(name) class=(class!("radio", attrs.remove("class"))) (attrs)> },
-    )
-}
-
-#[component]
-pub async fn radio_typed(
+pub async fn radio(
     name: String,
     color: ComponentColor,
     size: ComponentSize,

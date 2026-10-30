@@ -6,15 +6,7 @@ use topcoat::{
 
 #[component]
 pub async fn steps(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <ul class=(class!("steps", attrs.remove("class"))) (attrs)>(child)</ul> })
-}
-
-#[component]
-pub async fn steps_typed(
-    direction: ComponentDirection,
+    #[default] direction: ComponentDirection,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -25,14 +17,6 @@ pub async fn steps_typed(
 
 #[component]
 pub async fn step(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <li class=(class!("step", attrs.remove("class"))) (attrs)>(child)</li> })
-}
-
-#[component]
-pub async fn step_typed(
     color: ComponentColor,
     content: String,
     #[default] mut attrs: Attributes,

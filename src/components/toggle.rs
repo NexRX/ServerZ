@@ -5,14 +5,9 @@ use topcoat::{
 };
 
 #[component]
-pub async fn toggle(#[default] mut attrs: Attributes) -> Result<impl View> {
-    Ok(view! { <input type="checkbox" class=(class!("toggle", attrs.remove("class"))) (attrs)> })
-}
-
-#[component]
-pub async fn toggle_typed(
-    color: ComponentColor,
-    size: ComponentSize,
+pub async fn toggle(
+    #[default] color: ComponentColor,
+    #[default] size: ComponentSize,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
     Ok(

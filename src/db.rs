@@ -1,25 +1,63 @@
-//! The database connection.
-
+use cached::once;
 use toasty::Db;
-use topcoat::context::{Cx, app_context};
+use toasty::Executor;
+use toasty::Result;
+use toasty::migration::MigrationReport;
+use topcoat::context::Cx;
+use topcoat::context::app_context;
+use tracing::error;
+use tracing::instrument;
 
-/// The local SQLite database file, created when it is first opened.
 const DATABASE_URL: &str = "sqlite:data.db";
 
-/// Opens the database with every model in the application.
-///
-/// The tables come from migrations. After changing a model, generate a migration with
-/// `cargo run -- toasty migration generate` and apply it with
-/// `cargo run -- toasty migration apply`.
-pub async fn connect() -> toasty::Result<Db> {
+#[instrument(level = "debug", err)]
+pub async fn try_connect() -> Result<Db> {
     Db::builder()
         .models(toasty::models!(crate::*))
         .connect(DATABASE_URL)
         .await
 }
 
-/// Returns the database handle from the router's app context. Cloning it is cheap
-/// because it refers to a shared connection pool.
+#[once]
+pub async fn static_connection() -> Db {
+    match try_connect().await {
+        Ok(pool) => pool,
+        Err(err) => {
+            error!(?err, "Failed to connect to database so exiting");
+            std::process::exit(crate::error::CODE_DB_CONNECTION);
+        }
+    }
+}
+
+/// Returns the application database handle.
 pub fn db(cx: &Cx) -> Db {
     app_context::<Db>(cx).clone()
+}
+
+/// `cargo run -- toasty migration <command>` manages the database schema.
+pub async fn handle_cli_migration() {
+    let mut args = std::env::args().skip(1).peekable();
+    if args.peek().is_some_and(|arg| arg == "toasty")
+        && let Err(error) = toasty_cli::ToastyCli::new(static_connection().await)
+            .parse_from(args)
+            .await
+    {
+        error!("{error:#}");
+        std::process::exit(crate::error::CODE_DB_MIGRATION);
+    }
+}
+
+#[instrument(level = "info", skip_all, ret, err)]
+pub async fn migrate(db: &Db) -> toasty::Result<MigrationReport> {
+    static MIGRATIONS: toasty::migration::MigrationSet = toasty::embed_migrations!();
+    MIGRATIONS.apply(db).await
+}
+
+pub trait Singleton: Sized {
+    const SINGLETON_ID: u8 = 0;
+
+    async fn get(db: &mut dyn Executor) -> Result<Self>;
+    async fn fetch(cx: &Cx) -> Result<Self> {
+        Self::get(&mut db(cx)).await
+    }
 }

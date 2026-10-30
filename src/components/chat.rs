@@ -19,14 +19,7 @@ pub async fn chat(
 }
 #[component]
 pub async fn chat_bubble(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <div class=(class!("chat-bubble", attrs.remove("class"))) (attrs)>(child)</div> })
-}
-#[component]
-pub async fn chat_bubble_typed(
-    color: ComponentColor,
+    #[default] color: ComponentColor,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

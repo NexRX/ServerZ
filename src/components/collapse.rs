@@ -5,18 +5,8 @@ use topcoat::{
 
 #[component]
 pub async fn collapse(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(
-        view! { <details class=(class!("collapse collapse-arrow", attrs.remove("class"))) (attrs)>(child)</details> },
-    )
-}
-
-#[component]
-pub async fn collapse_typed(
-    open: bool,
-    plus: bool,
+    #[default] open: bool,
+    #[default] plus: bool,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

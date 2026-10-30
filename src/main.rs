@@ -1,23 +1,39 @@
 mod app;
 mod components;
 mod db;
+mod error;
 mod features;
+mod server;
+
+use tracing::info;
 
 #[tokio::main]
-async fn main() {
-    let db = db::connect().await.unwrap();
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    init_logging();
 
-    // `cargo run -- toasty migration <command>` manages the database schema.
-    let mut args = std::env::args().skip(1).peekable();
-    if args.peek().is_some_and(|arg| arg == "toasty") {
-        if let Err(error) = toasty_cli::ToastyCli::new(db).parse_from(args).await {
-            eprintln!("{error:#}");
-            std::process::exit(1);
-        }
-        return;
-    }
+    db::handle_cli_migration().await;
+
+    info!("Starting");
+    let db = db::try_connect().await?;
+    db::migrate(&db).await?;
 
     topcoat::start(app::router().app_context(db).build())
         .await
         .unwrap();
+    Ok(())
+}
+
+fn init_logging() {
+    #[cfg(debug_assertions)]
+    const DEFAULT_LOGGING: &str = "serverz=debug";
+    #[cfg(not(debug_assertions))]
+    const DEFAULT_LOGGING: &str = "serverz=info";
+
+    tracing_subscriber::fmt()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new(DEFAULT_LOGGING)),
+        )
+        .with_target(false)
+        .init();
 }

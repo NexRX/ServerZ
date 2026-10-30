@@ -6,14 +6,6 @@ use topcoat::{
 
 #[component]
 pub async fn megamenu(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <nav class=(class!("megamenu", attrs.remove("class"))) (attrs)>(child)</nav> })
-}
-
-#[component]
-pub async fn megamenu_typed(
     layout: MegamenuLayout,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,

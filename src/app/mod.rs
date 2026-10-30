@@ -1,31 +1,36 @@
+pub mod setup;
 pub mod showcase;
+
+use crate::features::{app_menu::app_menu, guards::require_server};
 use topcoat::{
     Result,
-    asset::{AssetBundle, RouterBuilderAssetExt},
+    asset::{AssetBundle, RouterBuilderAssetExt, asset},
+    context::Cx,
     font::{Font, fontsource::fontsource_font},
-    router::{RouterBuilder, RouterBuilderDiscoverExt, Slot, layout, module_router, page},
+    router::{
+        RouterBuilder, RouterBuilderDiscoverExt, Slot, layout, module_router, page, request::uri,
+    },
     runtime::RouterBuilderRuntimeExt,
     tailwind,
     view::{View, view},
 };
 
-/// The Geist font family, loaded from Fontsource.
-const GEIST: Font = fontsource_font!(GEIST, weight: [400, 700], style: Normal);
-
-/// Builds the application's router.
 pub fn router() -> RouterBuilder {
-    // The pages and layouts of this module and its submodules, with paths derived
-    // from the module tree.
     module_router!()
-        // The runtime's procedures and shards, which have no place in the module tree.
         .discover()
         .assets(AssetBundle::load().unwrap())
-        // Lets the browser runtime rerun pages; register it after other layers.
         .runtime()
 }
 
 #[layout]
-async fn root(slot: Slot<'_>) -> Result<impl View> {
+async fn root(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
+    const GEIST: Font = fontsource_font!(GEIST, weight: [400, 700], style: Normal);
+
+    let path = uri(cx).path();
+    if !path.starts_with("/setup") && path.starts_with("/showcase") {
+        require_server(cx).await?;
+    }
+
     Ok(view! {
         <!DOCTYPE html>
         <html lang="en">
@@ -39,7 +44,9 @@ async fn root(slot: Slot<'_>) -> Result<impl View> {
                 topcoat::runtime::script()
                 topcoat::dev::script()
             </head>
-            <body>(slot)</body>
+            <body>
+                app_menu((slot))
+           </body>
         </html>
     })
 }

@@ -6,16 +6,8 @@ use topcoat::{
 
 #[component]
 pub async fn footer(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <footer class=(class!("footer", attrs.remove("class"))) (attrs)>(child)</footer> })
-}
-
-#[component]
-pub async fn footer_typed(
-    direction: ComponentDirection,
-    center: bool,
+    #[default] direction: ComponentDirection,
+    #[default] center: bool,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

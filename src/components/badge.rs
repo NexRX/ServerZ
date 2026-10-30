@@ -6,16 +6,8 @@ use topcoat::{
 
 #[component]
 pub async fn badge(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <span class=(class!("badge", attrs.remove("class"))) (attrs)>(child)</span> })
-}
-
-#[component]
-pub async fn badge_typed(
-    color: ComponentColor,
-    size: ComponentSize,
+    #[default] color: ComponentColor,
+    #[default] size: ComponentSize,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

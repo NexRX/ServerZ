@@ -5,16 +5,8 @@ use topcoat::{
 };
 
 #[component]
-pub async fn rating(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <div class=(class!("rating", attrs.remove("class"))) (attrs)>(child)</div> })
-}
-
-#[component]
 pub async fn rating_star(
-    name: String,
+    #[default] name: String,
     value: u8,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
@@ -24,9 +16,9 @@ pub async fn rating_star(
 }
 
 #[component]
-pub async fn rating_typed(
-    size: ComponentSize,
-    mode: RatingMode,
+pub async fn rating(
+    #[default] size: ComponentSize,
+    #[default] mode: RatingMode,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

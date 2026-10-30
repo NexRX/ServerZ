@@ -69,20 +69,8 @@ impl InputVariant {
 
 #[component]
 pub async fn input(
-    #[default] color: InputColor,
-    #[default] size: InputSize,
-    #[default] variant: InputVariant,
-    #[default] mut attrs: Attributes,
-) -> Result<impl View> {
-    Ok(
-        view! { <input class=(class!("input w-full", color.classes(), size.classes(), variant.classes(), attrs.remove("class"))) (attrs)> },
-    )
-}
-
-#[component]
-pub async fn input_typed(
-    color: ComponentColor,
-    size: ComponentSize,
+    #[default] color: ComponentColor,
+    #[default] size: ComponentSize,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
     Ok(

@@ -5,16 +5,9 @@ use topcoat::{
 };
 
 #[component]
-pub async fn status(#[default] mut attrs: Attributes) -> Result<impl View> {
-    Ok(
-        view! { <span role="status" class=(class!("status", attrs.remove("class"))) (attrs)></span> },
-    )
-}
-
-#[component]
-pub async fn status_typed(
-    color: ComponentColor,
-    size: ComponentSize,
+pub async fn status(
+    #[default] color: ComponentColor,
+    #[default] size: ComponentSize,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
     Ok(

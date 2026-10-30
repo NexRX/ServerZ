@@ -6,19 +6,8 @@ use topcoat::{
 
 #[component]
 pub async fn modal(
-    id: String,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(
-        view! { <dialog id=(id) class=(class!("modal", attrs.remove("class"))) (attrs)>(child)</dialog> },
-    )
-}
-
-#[component]
-pub async fn modal_typed(
-    id: String,
-    placement: ModalPlacement,
+    #[default] id: String,
+    #[default] placement: ModalPlacement,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -30,7 +19,7 @@ pub async fn modal_typed(
 /// Popover-based modal for cases where focus trapping is not desired.
 #[component]
 pub async fn modal_popover(
-    id: String,
+    #[default] id: String,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -41,7 +30,7 @@ pub async fn modal_popover(
 
 #[component]
 pub async fn modal_trigger(
-    id: String,
+    #[default] id: String,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -52,7 +41,7 @@ pub async fn modal_trigger(
 
 #[component]
 pub async fn modal_popover_trigger(
-    id: String,
+    #[default] id: String,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

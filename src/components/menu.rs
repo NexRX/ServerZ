@@ -6,15 +6,8 @@ use topcoat::{
 
 #[component]
 pub async fn menu(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <ul class=(class!("menu", attrs.remove("class"))) (attrs)>(child)</ul> })
-}
-#[component]
-pub async fn menu_typed(
-    direction: ComponentDirection,
-    size: ComponentSize,
+    #[default] direction: ComponentDirection,
+    #[default] size: ComponentSize,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

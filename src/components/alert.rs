@@ -6,17 +6,7 @@ use topcoat::{
 
 #[component]
 pub async fn alert(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(
-        view! { <div role="alert" class=(class!("alert", attrs.remove("class"))) (attrs)>(child)</div> },
-    )
-}
-
-#[component]
-pub async fn alert_typed(
-    color: ComponentColor,
+    #[default] color: ComponentColor,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

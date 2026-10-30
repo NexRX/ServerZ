@@ -7,21 +7,10 @@ use topcoat::{
 #[component]
 pub async fn tooltip(
     text: String,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(
-        view! { <div data-tip=(text) class=(class!("tooltip", attrs.remove("class"))) (attrs)>(child)</div> },
-    )
-}
-
-#[component]
-pub async fn tooltip_typed(
-    text: String,
-    color: ComponentColor,
-    placement: TooltipPlacement,
-    alignment: TooltipAlignment,
-    open: bool,
+    #[default] color: ComponentColor,
+    #[default] placement: TooltipPlacement,
+    #[default] alignment: TooltipAlignment,
+    #[default] open: bool,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

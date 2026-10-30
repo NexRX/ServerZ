@@ -4,14 +4,7 @@ use topcoat::{
 };
 
 #[component]
-pub async fn calendar(#[default] mut attrs: Attributes) -> Result<impl View> {
-    Ok(
-        view! { <input type="date" aria-label="Choose date" class=(class!("input", attrs.remove("class"))) (attrs)> },
-    )
-}
-
-#[component]
-pub async fn calendar_typed(
+pub async fn calendar(
     #[default] min: String,
     #[default] max: String,
     #[default] mut attrs: Attributes,

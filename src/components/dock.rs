@@ -6,15 +6,7 @@ use topcoat::{
 
 #[component]
 pub async fn dock(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <nav class=(class!("dock", attrs.remove("class"))) (attrs)>(child)</nav> })
-}
-
-#[component]
-pub async fn dock_typed(
-    size: ComponentSize,
+    #[default] size: ComponentSize,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -25,7 +17,7 @@ pub async fn dock_typed(
 
 #[component]
 pub async fn dock_item(
-    active: bool,
+    #[default] active: bool,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

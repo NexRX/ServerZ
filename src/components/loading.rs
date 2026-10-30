@@ -5,16 +5,9 @@ use topcoat::{
 };
 
 #[component]
-pub async fn loading(#[default] mut attrs: Attributes) -> Result<impl View> {
-    Ok(
-        view! { <span role="status" aria-label="Loading" class=(class!("loading loading-spinner", attrs.remove("class"))) (attrs)></span> },
-    )
-}
-
-#[component]
-pub async fn loading_typed(
-    style: LoadingStyle,
-    size: ComponentSize,
+pub async fn loading(
+    #[default] style: LoadingStyle,
+    #[default] size: ComponentSize,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
     Ok(

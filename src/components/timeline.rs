@@ -6,15 +6,8 @@ use topcoat::{
 
 #[component]
 pub async fn timeline(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <ul class=(class!("timeline", attrs.remove("class"))) (attrs)>(child)</ul> })
-}
-#[component]
-pub async fn timeline_typed(
-    direction: ComponentDirection,
-    style: ComponentStyle,
+    #[default] direction: ComponentDirection,
+    #[default] style: ComponentStyle,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

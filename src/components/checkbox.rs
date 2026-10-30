@@ -5,14 +5,9 @@ use topcoat::{
 };
 
 #[component]
-pub async fn checkbox(#[default] mut attrs: Attributes) -> Result<impl View> {
-    Ok(view! { <input type="checkbox" class=(class!("checkbox", attrs.remove("class"))) (attrs)> })
-}
-
-#[component]
-pub async fn checkbox_typed(
-    color: ComponentColor,
-    size: ComponentSize,
+pub async fn checkbox(
+    #[default] color: ComponentColor,
+    #[default] size: ComponentSize,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
     Ok(

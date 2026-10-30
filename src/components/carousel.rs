@@ -6,17 +6,8 @@ use topcoat::{
 
 #[component]
 pub async fn carousel(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(
-        view! { <div class=(class!("carousel carousel-center w-full gap-4 scroll-smooth", attrs.remove("class"))) (attrs) tabindex="0">(child)</div> },
-    )
-}
-#[component]
-pub async fn carousel_typed(
-    direction: ComponentDirection,
-    alignment: CarouselAlignment,
+    #[default] direction: ComponentDirection,
+    #[default] alignment: CarouselAlignment,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -38,7 +29,7 @@ pub async fn carousel_item(
 }
 #[component]
 pub async fn carousel_slide(
-    id: String,
+    #[default] id: String,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -48,7 +39,7 @@ pub async fn carousel_slide(
 }
 #[component]
 pub async fn carousel_control(
-    target: String,
+    #[default] target: String,
     label: String,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
@@ -70,7 +61,7 @@ pub async fn carousel_indicators(
 
 #[component]
 pub async fn carousel_indicator(
-    target: String,
+    #[default] target: String,
     label: String,
     #[default] active: bool,
     #[default] mut attrs: Attributes,
@@ -83,7 +74,7 @@ pub async fn carousel_indicator(
 
 #[component]
 pub async fn carousel_controls(
-    previous: String,
+    #[default] previous: String,
     next: String,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {

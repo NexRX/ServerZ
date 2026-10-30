@@ -5,18 +5,10 @@ use topcoat::{
 };
 
 #[component]
-pub async fn radial_progress(value: u8, #[default] mut attrs: Attributes) -> Result<impl View> {
-    let value = value.min(100);
-    Ok(
-        view! { <div role="progressbar" aria-valuenow=(value.to_string()) style=(format!("--value:{value};")) class=(class!("radial-progress", attrs.remove("class"))) (attrs)>(format!("{value}%"))</div> },
-    )
-}
-
-#[component]
-pub async fn radial_progress_typed(
-    value: u8,
-    size: RadialSize,
-    thickness: RadialThickness,
+pub async fn radial_progress(
+    #[default] value: u8,
+    #[default] size: RadialSize,
+    #[default] thickness: RadialThickness,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
     let value = value.min(100);

@@ -4,13 +4,32 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-toasty = { version = "0.11", features = ["sqlite"] }
+jiff = "0.2.38"
+toasty = { version = "0.11", features = ["sqlite", "jiff"] }
 toasty-cli = "0.11"
 tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
-topcoat = { version = "0.10", default-features = false, features = ["asset", "discover", "font-fontsource", "icon-iconify", "router", "runtime", "serve", "tailwind", "ui", "view"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter", "fmt"] }
+topcoat = { version = "0.11", default-features = false, features = [
+    "asset",
+    "discover",
+    "font-fontsource",
+    "icon-iconify",
+    "router",
+    "runtime",
+    "serve",
+    "tailwind",
+    "ui",
+    "view",
+] }
+cached = { version = "4.0", features = ["async"] }
 
 [build-dependencies]
-topcoat = { version = "0.10.0", default-features = false, features = ["icon-iconify", "tailwind"] }
+topcoat = { version = "0.11", default-features = false, features = [
+    "icon-iconify",
+    "tailwind",
+] }
+reqwest = { version = "0.13", features = ["blocking"] }
 
 # Speed up compilation while keeping file and line numbers in error backtraces.
 [profile.dev]

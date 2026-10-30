@@ -6,15 +6,6 @@ use topcoat::{
 
 #[component]
 pub async fn tabs(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(
-        view! { <div role="tablist" class=(class!("tabs", attrs.remove("class"))) (attrs)>(child)</div> },
-    )
-}
-#[component]
-pub async fn tabs_typed(
     style: ComponentStyle,
     size: ComponentSize,
     #[default] mut attrs: Attributes,
@@ -33,15 +24,6 @@ pub async fn tabs_typed(
 }
 #[component]
 pub async fn tab(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(
-        view! { <button role="tab" class=(class!("tab", attrs.remove("class"))) (attrs)>(child)</button> },
-    )
-}
-#[component]
-pub async fn tab_typed(
     active: bool,
     disabled: bool,
     #[default] mut attrs: Attributes,
