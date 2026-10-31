@@ -1,3 +1,4 @@
 /target
 /data.db*
 .cargo/build-assets/tailwindcss
+.cargo/build-assets/daisyui/

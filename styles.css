@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import "./.cargo/build-assets/daisyui.css";
+@plugin "./.cargo/build-assets/daisyui/node_modules/daisyui";
 
 /* Scan the Rust sources for Tailwind and daisyUI classes. */
 @source "./src/**/*.rs";

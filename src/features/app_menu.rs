@@ -11,7 +11,7 @@ pub async fn app_menu(#[default] child: Child<'_>) -> Result<impl View> {
         <div class="drawer lg:drawer-open min-w-10 is-drawer-close:min-w-10 is-drawer-close:visible">
           <input id="app-menu" type="checkbox" class="drawer-toggle" />
           <div class="drawer-content flex flex-col items-center justify-center">
-            // <!-- Page content here -->
+            (child)
             <label for="app-menu" class="btn drawer-button lg:hidden">
               "Open drawer"
             </label>
@@ -22,6 +22,8 @@ pub async fn app_menu(#[default] child: Child<'_>) -> Result<impl View> {
               // <!-- Sidebar content here -->
               <li><a>"Sidebar Item 1"</a></li>
               <li><a>"Sidebar Item 2"</a></li>
+              <label for="app-menu" class="btn drawer-button mt-auto is-drawer-close:visible">"Expand Menu"</label>
+              <label for="app-menu" class="btn drawer-button mt-auto is-drawer-close:hidden">"Collapse Menu"</label>
             </ul>
           </div>
         </div>

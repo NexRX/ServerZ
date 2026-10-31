@@ -6,6 +6,7 @@
           "rust": "html",
           "Rust": "html"
         },
+        "configFile": "styles.css",
         "experimental": {
           "classRegex": [
             ["class!\\(([^)]*)\\)", "\"([^\"]*)\""]
