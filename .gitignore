@@ -2,3 +2,4 @@
 /data.db*
 .cargo/build-assets/tailwindcss
 .cargo/build-assets/daisyui/
+.cargo/build-assets/tailwind_deps/

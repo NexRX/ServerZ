@@ -1,5 +1,8 @@
 @import "tailwindcss";
-@plugin "./.cargo/build-assets/daisyui/node_modules/daisyui";
+@plugin "./target/build-assets/tailwind_deps/node_modules/daisyui";
+@plugin "./target/build-assets/tailwind_deps/node_modules/@iconify/tailwind4" {
+ prefixes: solar;
+};
 
 /* Scan the Rust sources for Tailwind and daisyUI classes. */
 @source "./src/**/*.rs";

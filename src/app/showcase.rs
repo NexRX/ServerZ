@@ -20,10 +20,7 @@ pub async fn showcase() -> Result<impl View> {
                 card::card(
                     card_header(
                         card_title(
-                            icon(
-                                data: iconify_icon!("lucide:sparkles"),
-                                attrs: attributes! { class="inline-block" }
-                            )
+                            <span class="iconify solar--wi-fi-bold-duotone"></span>
                             " "
                             "ServerZ"
                         )
