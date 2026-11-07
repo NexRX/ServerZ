@@ -1,8 +1,22 @@
-use crate::components::variants::MegamenuLayout;
+use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
     view::{Attributes, Child, View, class, component, view},
 };
+
+/// Megamenu layouts.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, TailwindClass)]
+pub enum MegamenuLayout {
+    #[default]
+    #[class = ""]
+    Normal,
+    #[class = "megamenu-wide"]
+    Wide,
+    #[class = "megamenu-full"]
+    Full,
+    #[class = "megamenu-vertical"]
+    Vertical,
+}
 
 #[component]
 pub async fn megamenu(
@@ -10,24 +24,12 @@ pub async fn megamenu(
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(
-        view! { <nav class=(class!("megamenu", layout.class(), attrs.remove("class"))) (attrs)>(child)</nav> },
-    )
-}
-
-#[component]
-pub async fn megamenu_active(#[default] mut attrs: Attributes) -> Result<impl View> {
-    Ok(view! { <span class=(class!("megamenu-active", attrs.remove("class"))) (attrs)></span> })
-}
-
-#[component]
-pub async fn megamenu_item(
-    id: String,
-    label: String,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(
-        view! { <div><button popovertarget=(id.clone()) class=(class!(attrs.remove("class"))) (attrs)>(label)</button><div id=(id) popover="popover">(child)</div></div> },
-    )
+    Ok(view! {
+        <nav
+            class=(class!("megamenu", layout.to_class(), attrs.remove("class")))
+            (attrs)
+        >
+            (child)
+        </nav>
+    })
 }

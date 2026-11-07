@@ -1,54 +1,53 @@
-use crate::components::variants::{ComponentDirection, ComponentStyle};
+use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
     view::{Attributes, Child, View, class, component, view},
 };
 
+/// Timeline directions.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, TailwindClass)]
+pub enum TimelineDirection {
+    #[default]
+    #[class = "timeline-horizontal"]
+    Horizontal,
+    #[class = "timeline-vertical"]
+    Vertical,
+}
+
+/// Timeline styles.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, TailwindClass)]
+pub enum TimelineStyle {
+    #[default]
+    #[class = ""]
+    Solid,
+    #[class = "timeline-box"]
+    Outline,
+    #[class = "timeline-compact"]
+    Dash,
+    #[class = "timeline-snap-icon"]
+    Soft,
+    #[class = ""]
+    Ghost,
+}
+
 #[component]
 pub async fn timeline(
-    #[default] direction: ComponentDirection,
-    #[default] style: ComponentStyle,
+    #[default] direction: TimelineDirection,
+    #[default] style: TimelineStyle,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    let s = match style {
-        ComponentStyle::Solid => "",
-        ComponentStyle::Outline => "timeline-box",
-        ComponentStyle::Dash => "timeline-compact",
-        ComponentStyle::Soft => "timeline-snap-icon",
-        ComponentStyle::Ghost => "",
-    };
-    Ok(
-        view! { <ul class=(class!("timeline", format!("timeline-{}", direction.suffix()), s, attrs.remove("class"))) (attrs)>(child)</ul> },
-    )
-}
-#[component]
-pub async fn timeline_item(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <li class=(class!(attrs.remove("class"))) (attrs)>(child)</li> })
-}
-#[component]
-pub async fn timeline_start(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <div class=(class!("timeline-start", attrs.remove("class"))) (attrs)>(child)</div> })
-}
-#[component]
-pub async fn timeline_middle(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(
-        view! { <div class=(class!("timeline-middle", attrs.remove("class"))) (attrs)>(child)</div> },
-    )
-}
-#[component]
-pub async fn timeline_end(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <div class=(class!("timeline-end", attrs.remove("class"))) (attrs)>(child)</div> })
+    Ok(view! {
+        <ul
+            class=(class!(
+                "timeline",
+                direction.to_class(),
+                style.to_class(),
+                attrs.remove("class"),
+            ))
+            (attrs)
+        >
+            (child)
+        </ul>
+    })
 }

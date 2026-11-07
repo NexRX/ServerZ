@@ -1,22 +1,77 @@
-use crate::components::variants::{ComponentColor, ComponentDirection, ComponentSize};
+use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
-    view::{Attributes, View, class, component, view},
+    view::{Attributes, Child, View, class, component, view},
 };
+
+/// Range colors matching daisyUI's color system.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, TailwindClass)]
+pub enum RangeColor {
+    #[default]
+    #[class = "range-neutral"]
+    Neutral,
+    #[class = "range-primary"]
+    Primary,
+    #[class = "range-secondary"]
+    Secondary,
+    #[class = "range-accent"]
+    Accent,
+    #[class = "range-info"]
+    Info,
+    #[class = "range-success"]
+    Success,
+    #[class = "range-warning"]
+    Warning,
+    #[class = "range-error"]
+    Error,
+}
+
+/// Range sizes.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, TailwindClass)]
+pub enum RangeSize {
+    #[class = "range-xs"]
+    Xs,
+    #[class = "range-sm"]
+    Sm,
+    #[default]
+    #[class = "range-md"]
+    Md,
+    #[class = "range-lg"]
+    Lg,
+    #[class = "range-xl"]
+    Xl,
+}
+
+/// Range directions.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, TailwindClass)]
+pub enum RangeDirection {
+    #[default]
+    #[class = ""]
+    Horizontal,
+    #[class = "range-vertical"]
+    Vertical,
+}
 
 #[component]
 pub async fn range(
-    #[default] color: ComponentColor,
-    #[default] size: ComponentSize,
-    #[default] direction: ComponentDirection,
+    #[default] color: RangeColor,
+    #[default] size: RangeSize,
+    #[default] direction: RangeDirection,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
-    let direction_class = if matches!(direction, ComponentDirection::Vertical) {
-        "range-vertical"
-    } else {
-        ""
-    };
-    Ok(
-        view! { <input type="range" min="0" max="100" class=(class!("range", format!("range-{}", color.suffix()), format!("range-{}", size.suffix()), direction_class, attrs.remove("class"))) (attrs)> },
-    )
+    Ok(view! {
+        <input
+            type="range"
+            min="0"
+            max="100"
+            class=(class!(
+                "range",
+                color.to_class(),
+                size.to_class(),
+                direction.to_class(),
+                attrs.remove("class"),
+            ))
+            (attrs)
+        >
+    })
 }

@@ -12,7 +12,16 @@ pub const fn clamp_countdown(value: u16) -> u16 {
 pub async fn countdown(value: u16, #[default] mut attrs: Attributes) -> Result<impl View> {
     let value = clamp_countdown(value);
     Ok(
-        view! { <span aria-live="polite" aria-label=(value.to_string()) class=(class!("countdown", attrs.remove("class"))) (attrs)><span style=(format!("--value:{value};"))>(value)</span></span> },
+        view! {
+            <span
+                aria-live="polite"
+                aria-label=(value.to_string())
+                class=(class!("countdown", attrs.remove("class")))
+                (attrs)
+            >
+                <span style=(format!("--value:{value};"))>(value)</span>
+            </span>
+        },
     )
 }
 

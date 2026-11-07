@@ -133,7 +133,13 @@ pub async fn button(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(view! {
-        <button class=(class!(button_variants(color, variant, size, layout), attrs.remove("class"))) (attrs)>
+        <button
+            class=(class!(
+                button_variants(color, variant, size, layout),
+                attrs.remove("class"),
+            ))
+            (attrs)
+        >
             (child)
         </button>
     })

@@ -8,7 +8,9 @@ pub async fn avatar(
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(view! { <div class=(class!("avatar", attrs.remove("class"))) (attrs)>(child)</div> })
+    Ok(view! {
+        <div class=(class!("avatar", attrs.remove("class"))) (attrs)>(child)</div>
+    })
 }
 
 #[component]
@@ -17,7 +19,14 @@ pub async fn avatar_group(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <div class=(class!("avatar-group -space-x-4", attrs.remove("class"))) (attrs)>(child)</div> },
+        view! {
+            <div
+                class=(class!("avatar-group -space-x-4", attrs.remove("class")))
+                (attrs)
+            >
+                (child)
+            </div>
+        },
     )
 }
 
@@ -27,7 +36,11 @@ pub async fn avatar_image(
     #[default] alt: String,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
-    Ok(view! { <div class=(class!(attrs.remove("class"))) (attrs)><img src=(src) alt=(alt)></div> })
+    Ok(view! {
+        <div class=(class!(attrs.remove("class"))) (attrs)>
+            <img src=(src) alt=(alt)>
+        </div>
+    })
 }
 
 #[component]
@@ -36,7 +49,16 @@ pub async fn avatar_placeholder(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <div class=(class!("avatar avatar-placeholder", attrs.remove("class"))) (attrs)><div class="bg-neutral text-neutral-content w-12"><span>(child)</span></div></div> },
+        view! {
+            <div
+                class=(class!("avatar avatar-placeholder", attrs.remove("class")))
+                (attrs)
+            >
+                <div class="bg-neutral text-neutral-content w-12">
+                    <span>(child)</span>
+                </div>
+            </div>
+        },
     )
 }
 
@@ -46,7 +68,11 @@ pub async fn avatar_online(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <div class=(class!("avatar avatar-online", attrs.remove("class"))) (attrs)>(child)</div> },
+        view! {
+            <div class=(class!("avatar avatar-online", attrs.remove("class"))) (attrs)>
+                (child)
+            </div>
+        },
     )
 }
 
@@ -56,6 +82,10 @@ pub async fn avatar_offline(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <div class=(class!("avatar avatar-offline", attrs.remove("class"))) (attrs)>(child)</div> },
+        view! {
+            <div class=(class!("avatar avatar-offline", attrs.remove("class"))) (attrs)>
+                (child)
+            </div>
+        },
     )
 }

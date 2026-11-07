@@ -9,7 +9,11 @@ pub async fn fieldset(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <fieldset class=(class!("fieldset", attrs.remove("class"))) (attrs)>(child)</fieldset> },
+        view! {
+            <fieldset class=(class!("fieldset", attrs.remove("class"))) (attrs)>
+                (child)
+            </fieldset>
+        },
     )
 }
 
@@ -19,6 +23,10 @@ pub async fn fieldset_legend(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <legend class=(class!("fieldset-legend", attrs.remove("class"))) (attrs)>(child)</legend> },
+        view! {
+            <legend class=(class!("fieldset-legend", attrs.remove("class"))) (attrs)>
+                (child)
+            </legend>
+        },
     )
 }

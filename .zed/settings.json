@@ -4,23 +4,18 @@
       "settings": {
         "includeLanguages": {
           "rust": "html",
-          "Rust": "html"
+          "Rust": "html",
         },
         "configFile": "styles.css",
         "experimental": {
-          "classRegex": [
-            ["class!\\(([^)]*)\\)", "\"([^\"]*)\""]
-          ]
-        }
-      }
-    }
+          "classRegex": [["class!\\(([^)]*)\\)", "\"([^\"]*)\""]],
+        },
+      },
+    },
   },
   "languages": {
     "Rust": {
-      "language_servers": [
-        "rust-analyzer",
-        "tailwindcss-language-server"
-      ]
-    }
-  }
+      "language_servers": ["rust-analyzer", "tailwindcss-language-server"],
+    },
+  },
 }

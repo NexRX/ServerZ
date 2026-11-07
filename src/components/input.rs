@@ -1,79 +1,72 @@
-#![allow(dead_code)]
-
-use crate::components::variants::{ComponentColor, ComponentSize};
+use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
-    view::{Attributes, StaticClass, View, class, component, view},
+    view::{Attributes, View, class, component, view},
 };
 
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+/// Input colors matching daisyUI's color system.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, TailwindClass)]
 pub enum InputColor {
     #[default]
+    #[class = "input-neutral"]
     Neutral,
+    #[class = "input-primary"]
     Primary,
+    #[class = "input-secondary"]
     Secondary,
+    #[class = "input-accent"]
     Accent,
+    #[class = "input-info"]
     Info,
+    #[class = "input-success"]
     Success,
+    #[class = "input-warning"]
     Warning,
+    #[class = "input-error"]
     Error,
 }
-impl InputColor {
-    fn classes(self) -> StaticClass {
-        match self {
-            Self::Neutral => class!("input"),
-            Self::Primary => class!("input-primary"),
-            Self::Secondary => class!("input-secondary"),
-            Self::Accent => class!("input-accent"),
-            Self::Info => class!("input-info"),
-            Self::Success => class!("input-success"),
-            Self::Warning => class!("input-warning"),
-            Self::Error => class!("input-error"),
-        }
-    }
-}
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+
+/// Input sizes.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, TailwindClass)]
 pub enum InputSize {
+    #[class = "input-xs"]
     Xs,
+    #[class = "input-sm"]
     Sm,
     #[default]
+    #[class = "input-md"]
     Md,
+    #[class = "input-lg"]
     Lg,
+    #[class = "input-xl"]
     Xl,
 }
-impl InputSize {
-    fn classes(self) -> StaticClass {
-        match self {
-            Self::Xs => class!("input-xs"),
-            Self::Sm => class!("input-sm"),
-            Self::Md => class!("input-md"),
-            Self::Lg => class!("input-lg"),
-            Self::Xl => class!("input-xl"),
-        }
-    }
-}
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+
+/// Input variants.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, TailwindClass)]
 pub enum InputVariant {
     #[default]
+    #[class = ""]
     Default,
+    #[class = "input-ghost"]
     Ghost,
-}
-impl InputVariant {
-    fn classes(self) -> StaticClass {
-        match self {
-            Self::Default => class!("input"),
-            Self::Ghost => class!("input-ghost"),
-        }
-    }
 }
 
 #[component]
 pub async fn input(
-    #[default] color: ComponentColor,
-    #[default] size: ComponentSize,
+    #[default] color: InputColor,
+    #[default] size: InputSize,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
-    Ok(
-        view! { <input class=(class!("input w-full", format!("input-{}", color.suffix()), format!("input-{}", size.suffix()), attrs.remove("class"))) (attrs)> },
-    )
+    Ok(view! {
+        <input
+            class=(class!(
+                "input w-full",
+                color.to_class(),
+                size.to_class(),
+                attrs.remove("class"),
+            ))
+            (attrs)
+        >
+    })
 }

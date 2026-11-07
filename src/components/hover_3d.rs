@@ -12,8 +12,14 @@ pub async fn hover_3d(
     Ok(view! {
         <div class=(class!("hover-3d", attrs.remove("class"))) (attrs)>
             (child)
-            <div></div><div></div><div></div><div></div>
-            <div></div><div></div><div></div><div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
         </div>
     })
 }

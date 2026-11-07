@@ -1,22 +1,74 @@
-use crate::components::variants::{ComponentColor, ComponentSize, ComponentVariant};
+use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
     view::{Attributes, View, class, component, view},
 };
 
+/// Textarea colors matching daisyUI's color system.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, TailwindClass)]
+pub enum TextareaColor {
+    #[default]
+    #[class = "textarea-neutral"]
+    Neutral,
+    #[class = "textarea-primary"]
+    Primary,
+    #[class = "textarea-secondary"]
+    Secondary,
+    #[class = "textarea-accent"]
+    Accent,
+    #[class = "textarea-info"]
+    Info,
+    #[class = "textarea-success"]
+    Success,
+    #[class = "textarea-warning"]
+    Warning,
+    #[class = "textarea-error"]
+    Error,
+}
+
+/// Textarea sizes.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, TailwindClass)]
+pub enum TextareaSize {
+    #[class = "textarea-xs"]
+    Xs,
+    #[class = "textarea-sm"]
+    Sm,
+    #[default]
+    #[class = "textarea-md"]
+    Md,
+    #[class = "textarea-lg"]
+    Lg,
+    #[class = "textarea-xl"]
+    Xl,
+}
+
+/// Textarea variants.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, TailwindClass)]
+pub enum TextareaVariant {
+    #[default]
+    #[class = ""]
+    Default,
+    #[class = "textarea-ghost"]
+    Ghost,
+}
+
 #[component]
 pub async fn textarea(
-    color: ComponentColor,
-    size: ComponentSize,
-    variant: ComponentVariant,
+    color: TextareaColor,
+    size: TextareaSize,
+    variant: TextareaVariant,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
-    let style = if variant.suffix().is_empty() {
-        String::new()
-    } else {
-        format!("textarea-{}", variant.suffix())
-    };
-    Ok(
-        view! { <textarea class=(class!("textarea", format!("textarea-{}", color.suffix()), format!("textarea-{}", size.suffix()), style, attrs.remove("class"))) (attrs)></textarea> },
-    )
+    Ok(view! {
+        <textarea
+            class=(class!(
+                "textarea",
+                color.to_class(),
+                size.to_class(),
+                variant.to_class(),
+                attrs.remove("class"),
+            ))
+            (attrs)
+        ></textarea>
+    })
 }

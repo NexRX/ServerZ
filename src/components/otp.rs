@@ -15,8 +15,19 @@ pub async fn otp(#[default] length: u8, #[default] mut attrs: Attributes) -> Res
             <span data-otp-digit="true" aria-hidden="true"></span>
             <span data-otp-digit="true" aria-hidden="true"></span>
             <span data-otp-digit="true" aria-hidden="true"></span>
-            <input type="text" autocomplete="one-time-code" inputmode="numeric" maxlength=(length.to_string()) pattern=(format!("[0-9]{{{length}}}")) required="required">
-            <script>(format!("document.currentScript.parentElement.querySelector('input').addEventListener('input',function(){{{script}}})"))</script>
+            <input
+                type="text"
+                autocomplete="one-time-code"
+                inputmode="numeric"
+                maxlength=(length.to_string())
+                pattern=(format!("[0-9]{{{length}}}"))
+                required="required"
+            >
+            <script>
+                (format!(
+                    "document.currentScript.parentElement.querySelector('input').addEventListener('input',function(){{{script}}})",
+                ))
+            </script>
         </label>
     })
 }

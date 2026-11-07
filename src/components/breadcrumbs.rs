@@ -9,7 +9,15 @@ pub async fn breadcrumbs(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <nav aria-label="Breadcrumb" class=(class!("breadcrumbs", attrs.remove("class"))) (attrs)><ul>(child)</ul></nav> },
+        view! {
+            <nav
+                aria-label="Breadcrumb"
+                class=(class!("breadcrumbs", attrs.remove("class")))
+                (attrs)
+            >
+                <ul>(child)</ul>
+            </nav>
+        },
     )
 }
 
@@ -19,5 +27,9 @@ pub async fn breadcrumb_item(
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(view! { <li class=(class!(attrs.remove("class"))) (attrs)><a href=(href)>(child)</a></li> })
+    Ok(view! {
+        <li class=(class!(attrs.remove("class"))) (attrs)>
+            <a href=(href)>(child)</a>
+        </li>
+    })
 }

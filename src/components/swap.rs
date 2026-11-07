@@ -15,7 +15,12 @@ pub async fn swap(
     let f = if flip { "swap-flip" } else { "" };
     let a = if active { "swap-active" } else { "" };
     Ok(
-        view! { <label class=(class!("swap", r, f, a, attrs.remove("class"))) (attrs)><input type="checkbox" checked=(active)>(child)</label> },
+        view! {
+            <label class=(class!("swap", r, f, a, attrs.remove("class"))) (attrs)>
+                <input type="checkbox" checked=(active)>
+                (child)
+            </label>
+        },
     )
 }
 #[component]
@@ -23,14 +28,18 @@ pub async fn swap_on(
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(view! { <span class=(class!("swap-on", attrs.remove("class"))) (attrs)>(child)</span> })
+    Ok(view! {
+        <span class=(class!("swap-on", attrs.remove("class"))) (attrs)>(child)</span>
+    })
 }
 #[component]
 pub async fn swap_off(
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(view! { <span class=(class!("swap-off", attrs.remove("class"))) (attrs)>(child)</span> })
+    Ok(view! {
+        <span class=(class!("swap-off", attrs.remove("class"))) (attrs)>(child)</span>
+    })
 }
 #[component]
 pub async fn swap_indeterminate(
@@ -38,6 +47,10 @@ pub async fn swap_indeterminate(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <span class=(class!("swap-indeterminate", attrs.remove("class"))) (attrs)>(child)</span> },
+        view! {
+            <span class=(class!("swap-indeterminate", attrs.remove("class"))) (attrs)>
+                (child)
+            </span>
+        },
     )
 }

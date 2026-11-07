@@ -9,7 +9,11 @@ pub async fn dropdown(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <details class=(class!("dropdown", attrs.remove("class"))) (attrs)>(child)</details> },
+        view! {
+            <details class=(class!("dropdown", attrs.remove("class"))) (attrs)>
+                (child)
+            </details>
+        },
     )
 }
 
@@ -19,6 +23,16 @@ pub async fn dropdown_content(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <ul class=(class!("dropdown-content menu z-10 w-52 rounded-box bg-base-100 p-2 shadow", attrs.remove("class"))) (attrs)>(child)</ul> },
+        view! {
+            <ul
+                class=(class!(
+                    "dropdown-content menu z-10 w-52 rounded-box bg-base-100 p-2 shadow",
+                    attrs.remove("class"),
+                ))
+                (attrs)
+            >
+                (child)
+            </ul>
+        },
     )
 }

@@ -21,7 +21,15 @@ pub async fn collapse(
         "collapse-close"
     };
     Ok(
-        view! { <details class=(class!("collapse", modifier, state, attrs.remove("class"))) (attrs) open=(open)>(child)</details> },
+        view! {
+            <details
+                class=(class!("collapse", modifier, state, attrs.remove("class")))
+                (attrs)
+                open=(open)
+            >
+                (child)
+            </details>
+        },
     )
 }
 
@@ -31,7 +39,14 @@ pub async fn collapse_title(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <summary class=(class!("collapse-title font-semibold", attrs.remove("class"))) (attrs)>(child)</summary> },
+        view! {
+            <summary
+                class=(class!("collapse-title font-semibold", attrs.remove("class")))
+                (attrs)
+            >
+                (child)
+            </summary>
+        },
     )
 }
 #[component]
@@ -40,6 +55,10 @@ pub async fn collapse_content(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <div class=(class!("collapse-content", attrs.remove("class"))) (attrs)>(child)</div> },
+        view! {
+            <div class=(class!("collapse-content", attrs.remove("class"))) (attrs)>
+                (child)
+            </div>
+        },
     )
 }

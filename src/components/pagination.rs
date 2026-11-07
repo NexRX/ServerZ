@@ -9,7 +9,15 @@ pub async fn pagination(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <nav aria-label="Pagination" class=(class!("join", attrs.remove("class"))) (attrs)>(child)</nav> },
+        view! {
+            <nav
+                aria-label="Pagination"
+                class=(class!("join", attrs.remove("class")))
+                (attrs)
+            >
+                (child)
+            </nav>
+        },
     )
 }
 
@@ -19,6 +27,10 @@ pub async fn pagination_item(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <button class=(class!("btn join-item", attrs.remove("class"))) (attrs)>(child)</button> },
+        view! {
+            <button class=(class!("btn join-item", attrs.remove("class"))) (attrs)>
+                (child)
+            </button>
+        },
     )
 }

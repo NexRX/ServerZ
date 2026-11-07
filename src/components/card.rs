@@ -75,7 +75,16 @@ pub async fn card(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(view! {
-        <div class=(class!("card", variant.classes(), size.classes(), layout.classes(), attrs.remove("class"))) (attrs)>
+        <div
+            class=(class!(
+                "card",
+                variant.classes(),
+                size.classes(),
+                layout.classes(),
+                attrs.remove("class"),
+            ))
+            (attrs)
+        >
             (child)
         </div>
     })
@@ -86,7 +95,9 @@ pub async fn card_header(
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(view! { <div class=(class!("card-title", attrs.remove("class"))) (attrs)>(child)</div> })
+    Ok(view! {
+        <div class=(class!("card-title", attrs.remove("class"))) (attrs)>(child)</div>
+    })
 }
 
 #[component]
@@ -103,7 +114,11 @@ pub async fn card_description(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <p class=(class!("text-base-content/70", attrs.remove("class"))) (attrs)>(child)</p> },
+        view! {
+            <p class=(class!("text-base-content/70", attrs.remove("class"))) (attrs)>
+                (child)
+            </p>
+        },
     )
 }
 
@@ -112,7 +127,9 @@ pub async fn card_content(
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(view! { <div class=(class!("card-body", attrs.remove("class"))) (attrs)>(child)</div> })
+    Ok(view! {
+        <div class=(class!("card-body", attrs.remove("class"))) (attrs)>(child)</div>
+    })
 }
 
 #[component]
@@ -120,5 +137,7 @@ pub async fn card_footer(
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(view! { <div class=(class!("card-actions", attrs.remove("class"))) (attrs)>(child)</div> })
+    Ok(view! {
+        <div class=(class!("card-actions", attrs.remove("class"))) (attrs)>(child)</div>
+    })
 }

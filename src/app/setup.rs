@@ -6,9 +6,5 @@ use topcoat::{
 
 #[page]
 pub async fn setup() -> Result<impl View> {
-    Ok(view! {
-        <main>
-            "setup"
-        </main>
-    })
+    Ok(view! { <main>"setup"</main> })
 }

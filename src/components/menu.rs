@@ -1,68 +1,53 @@
-use crate::components::variants::{ComponentDirection, ComponentSize};
+use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
     view::{Attributes, Child, View, class, component, view},
 };
 
+/// Menu sizes.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, TailwindClass)]
+pub enum MenuSize {
+    #[class = "menu-xs"]
+    Xs,
+    #[class = "menu-sm"]
+    Sm,
+    #[default]
+    #[class = "menu-md"]
+    Md,
+    #[class = "menu-lg"]
+    Lg,
+    #[class = "menu-xl"]
+    Xl,
+}
+
+/// Menu directions.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, TailwindClass)]
+pub enum MenuDirection {
+    #[default]
+    #[class = "menu-horizontal"]
+    Horizontal,
+    #[class = "menu-vertical"]
+    Vertical,
+}
+
 #[component]
 pub async fn menu(
-    #[default] direction: ComponentDirection,
-    #[default] size: ComponentSize,
+    #[default] direction: MenuDirection,
+    #[default] size: MenuSize,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(
-        view! { <ul class=(class!("menu", format!("menu-{}", direction.suffix()), format!("menu-{}", size.suffix()), attrs.remove("class"))) (attrs)>(child)</ul> },
-    )
-}
-#[component]
-pub async fn menu_title(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(view! { <li class=(class!("menu-title", attrs.remove("class"))) (attrs)>(child)</li> })
-}
-#[component]
-pub async fn menu_item(
-    active: bool,
-    disabled: bool,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    let a = if active { "menu-active" } else { "" };
-    let d = if disabled { "menu-disabled" } else { "" };
-    Ok(view! { <li class=(class!(a, d, attrs.remove("class"))) (attrs)>(child)</li> })
-}
-
-#[component]
-pub async fn menu_dropdown(
-    title: String,
-    #[default] open: bool,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(
-        view! { <li class=(class!(attrs.remove("class"))) (attrs)><details open=(open)><summary>(title)</summary><ul>(child)</ul></details></li> },
-    )
-}
-
-#[component]
-pub async fn menu_paged(
-    title: String,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(
-        view! { <li class=(class!("menu-paged", attrs.remove("class"))) (attrs)><details><summary>(title)</summary><ul>(child)</ul></details></li> },
-    )
-}
-
-#[component]
-pub async fn menu_dropdown_toggle(
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
-    Ok(
-        view! { <button class=(class!("menu-dropdown-toggle", attrs.remove("class"))) (attrs)>(child)</button> },
-    )
+    Ok(view! {
+        <ul
+            class=(class!(
+                "menu",
+                direction.to_class(),
+                size.to_class(),
+                attrs.remove("class"),
+            ))
+            (attrs)
+        >
+            (child)
+        </ul>
+    })
 }

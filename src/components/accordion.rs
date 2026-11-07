@@ -19,7 +19,15 @@ pub async fn accordion_group(
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(
-        view! { <section data-accordion-group=(name) class=(class!(attrs.remove("class"))) (attrs)>(child)</section> },
+        view! {
+            <section
+                data-accordion-group=(name)
+                class=(class!(attrs.remove("class")))
+                (attrs)
+            >
+                (child)
+            </section>
+        },
     )
 }
 
@@ -39,6 +47,20 @@ pub async fn accordion_item(
     };
     let checked = open.then_some("checked");
     Ok(
-        view! { <div class=(class!("collapse", modifier, "border border-base-300", attrs.remove("class"))) (attrs)><input type="radio" name=(group) checked=(checked)><div class="collapse-title font-semibold">(title)</div><div class="collapse-content">(child)</div></div> },
+        view! {
+            <div
+                class=(class!(
+                    "collapse",
+                    modifier,
+                    "border border-base-300",
+                    attrs.remove("class"),
+                ))
+                (attrs)
+            >
+                <input type="radio" name=(group) checked=(checked)>
+                <div class="collapse-title font-semibold">(title)</div>
+                <div class="collapse-content">(child)</div>
+            </div>
+        },
     )
 }

@@ -1,3 +1,5 @@
+#![allow(unused_attributes)]
+
 mod app;
 mod components;
 mod db;

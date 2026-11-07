@@ -4,16 +4,19 @@ pub mod showcase;
 use crate::features::{app_menu::app_menu, guards::require_server};
 use topcoat::{
     Result,
-    asset::{AssetBundle, RouterBuilderAssetExt, asset},
+    asset::{AssetBundle, RouterBuilderAssetExt},
     context::Cx,
     font::{Font, fontsource::fontsource_font},
     router::{
-        RouterBuilder, RouterBuilderDiscoverExt, Slot, layout, module_router, page, request::uri,
+        RouterBuilder, RouterBuilderDiscoverExt, Slot, error::NotFoundError, layout, module_router,
+        page, request::uri,
     },
     runtime::RouterBuilderRuntimeExt,
     tailwind,
-    view::{View, view},
+    view::{View, component, error_boundary, view},
 };
+
+topcoat::router::not_found!();
 
 pub fn router() -> RouterBuilder {
     module_router!()
@@ -45,17 +48,33 @@ async fn root(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
                 topcoat::dev::script()
             </head>
             <body>
-                app_menu((slot))
-           </body>
+                error_boundary(
+                    fallback: |error| {
+                        if error.downcast_ref::<NotFoundError>().is_some() {
+                            Ok(view! { app_menu(not_found_fallback()) })
+                        } else {
+                            Err(error)
+                        }
+                    },
+                    app_menu((slot))
+                )
+            </body>
         </html>
     })
 }
 
 #[page]
 async fn home() -> Result<impl View> {
+    Ok(view! { <main class="mx-auto max-w-2xl px-4 py-16">"hi"</main> })
+}
+
+#[component]
+async fn not_found_fallback(cx: &Cx) -> Result<impl View> {
     Ok(view! {
         <main class="mx-auto max-w-2xl px-4 py-16">
-           "hi"
+            "Not Found! "
+            <code>(uri(cx).path())</code>
+            " does not exist."
         </main>
     })
 }

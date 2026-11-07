@@ -1,28 +1,48 @@
-use crate::components::variants::ComponentSize;
+use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
     view::{Attributes, Child, View, class, component, view},
 };
 
+/// Dock sizes.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, TailwindClass)]
+pub enum DockSize {
+    #[class = "dock-xs"]
+    Xs,
+    #[class = "dock-sm"]
+    Sm,
+    #[default]
+    #[class = "dock-md"]
+    Md,
+    #[class = "dock-lg"]
+    Lg,
+    #[class = "dock-xl"]
+    Xl,
+}
+
 #[component]
 pub async fn dock(
-    #[default] size: ComponentSize,
+    #[default] size: DockSize,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(
-        view! { <nav class=(class!("dock", format!("dock-{}", size.suffix()), attrs.remove("class"))) (attrs)>(child)</nav> },
-    )
+    Ok(view! {
+        <nav class=(class!("dock", size.to_class(), attrs.remove("class"))) (attrs)>
+            (child)
+        </nav>
+    })
 }
 
 #[component]
 pub async fn dock_item(
-    #[default] active: bool,
+    active: bool,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    let state = if active { "dock-active" } else { "" };
-    Ok(view! { <button class=(class!(state, attrs.remove("class"))) (attrs)>(child)</button> })
+    let active_class = if active { "dock-active" } else { "" };
+    Ok(view! {
+        <div class=(class!("dock-item", active_class, attrs.remove("class"))) (attrs)>(child)</div>
+    })
 }
 
 #[component]
@@ -30,5 +50,7 @@ pub async fn dock_label(
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(view! { <span class=(class!("dock-label", attrs.remove("class"))) (attrs)>(child)</span> })
+    Ok(view! {
+        <div class=(class!("dock-label", attrs.remove("class"))) (attrs)>(child)</div>
+    })
 }
