@@ -69,6 +69,13 @@ pub mod toggle;
 pub mod tooltip;
 pub mod validator;
 
+#[macro_export]
+macro_rules! tw {
+    ($class:literal) => {
+        $class
+    };
+}
+
 pub mod prelude {
     pub use super::accordion::*;
     pub use super::alert::*;
@@ -138,4 +145,6 @@ pub mod prelude {
     pub use super::toggle::*;
     pub use super::tooltip::*;
     pub use super::validator::*;
+
+    pub use crate::tw;
 }

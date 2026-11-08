@@ -8,7 +8,11 @@
         },
         "configFile": "styles.css",
         "experimental": {
-          "classRegex": [["class!\\(([^)]*)\\)", "\"([^\"]*)\""]],
+          "classRegex": [
+            "tw!\\(\\s*\"([^\"]*)\"",
+            ["class!\\(([^)]*)\\)", "\"([^\"]*)\""],
+            "class=\"([^\"]*)\"",
+          ],
         },
       },
     },
@@ -16,6 +20,9 @@
   "languages": {
     "Rust": {
       "language_servers": ["rust-analyzer", "tailwindcss-language-server"],
+      "completions": {
+        "words": "enabled",
+      },
     },
   },
 }
