@@ -3,22 +3,6 @@
 version = 4
 
 [[package]]
-name = "ServerZ"
-version = "0.1.0"
-dependencies = [
- "cached",
- "jiff",
- "reqwest",
- "server-z-macros",
- "toasty",
- "toasty-cli",
- "tokio",
- "topcoat",
- "tracing",
- "tracing-subscriber",
-]
-
-[[package]]
 name = "adler2"
 version = "2.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3426,6 +3410,22 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.119",
+]
+
+[[package]]
+name = "serverz"
+version = "0.1.0"
+dependencies = [
+ "cached",
+ "jiff",
+ "reqwest",
+ "server-z-macros",
+ "toasty",
+ "toasty-cli",
+ "tokio",
+ "topcoat",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]

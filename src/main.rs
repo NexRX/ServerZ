@@ -6,16 +6,16 @@ mod db;
 mod error;
 mod features;
 mod server;
+mod user;
 
 use tracing::info;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
-
     db::handle_cli_migration().await;
 
-    info!("Starting");
+    info!("Starting ServerZ");
     let db = db::try_connect().await?;
     db::migrate(&db).await?;
 

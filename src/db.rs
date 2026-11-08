@@ -6,6 +6,7 @@ use toasty::migration::MigrationReport;
 use topcoat::context::Cx;
 use topcoat::context::app_context;
 use tracing::error;
+use tracing::info;
 use tracing::instrument;
 
 const DATABASE_URL: &str = "sqlite:data.db";
@@ -37,13 +38,23 @@ pub fn db(cx: &Cx) -> Db {
 /// `cargo run -- toasty migration <command>` manages the database schema.
 pub async fn handle_cli_migration() {
     let mut args = std::env::args().skip(1).peekable();
-    if args.peek().is_some_and(|arg| arg == "toasty")
-        && let Err(error) = toasty_cli::ToastyCli::new(static_connection().await)
+
+    let is_handling = args.peek().is_some_and(|arg| arg == "toasty");
+    if is_handling {
+        info!("CLI: Running migrations");
+        match toasty_cli::ToastyCli::new(static_connection().await)
             .parse_from(args)
             .await
-    {
-        error!("{error:#}");
-        std::process::exit(crate::error::CODE_DB_MIGRATION);
+        {
+            Ok(_) => {
+                info!("Migrations ran successfully, exiting...");
+                std::process::exit(0);
+            }
+            Err(err) => {
+                error!("{err:#}");
+                std::process::exit(crate::error::CODE_DB_MIGRATION);
+            }
+        }
     }
 }
 
