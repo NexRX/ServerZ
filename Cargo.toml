@@ -26,6 +26,8 @@ topcoat = { version = "0.11", default-features = false, features = [
 cached = { version = "4.0", features = ["async"] }
 serde = { version = "1.0.229", features = ["derive"] }
 miette = { version = "7.6.0", features = ["fancy"] }
+derive_more = { version = "2.1.1", features = ["full"] }
+constcat = "0.6.1"
 
 [build-dependencies]
 topcoat = { version = "0.11", default-features = false, features = [

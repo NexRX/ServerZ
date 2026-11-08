@@ -41,7 +41,9 @@ pub async fn dock_item(
 ) -> Result<impl View> {
     let active_class = if active { "dock-active" } else { "" };
     Ok(view! {
-        <div class=(class!("dock-item", active_class, attrs.remove("class"))) (attrs)>(child)</div>
+        <div class=(class!("dock-item", active_class, attrs.remove("class"))) (attrs)>
+            (child)
+        </div>
     })
 }
 

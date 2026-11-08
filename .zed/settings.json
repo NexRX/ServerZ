@@ -20,6 +20,12 @@
   "languages": {
     "Rust": {
       "language_servers": ["rust-analyzer", "tailwindcss-language-server"],
+      "formatter": {
+        "external": {
+          "command": "topcoat",
+          "arguments": ["fmt", "--stdin", "--rustfmt"],
+        },
+      },
       "completions": {
         "words": "enabled",
       },

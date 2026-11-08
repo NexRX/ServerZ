@@ -54,14 +54,14 @@ pub async fn steps(
 
 #[component]
 pub async fn step(
-    color: StepColor,
-    content: String,
+    content: impl AsRef<str> + Send,
+    #[default] color: StepColor,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(view! {
         <li
-            data-content=(content)
+            data-content=(content.as_ref())
             class=(class!("step", color.to_class(), attrs.remove("class")))
             (attrs)
         >
