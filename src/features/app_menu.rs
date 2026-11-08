@@ -104,11 +104,11 @@ async fn drawer_control() -> Result<impl View> {
                 data-tip="Menu"
             >
                 <span
-                    class="iconify solar--chevron-first-bold-duotone is-drawer-open:hidden"
+                    class="iconify solar--chevron-last-bold-duotone is-drawer-open:hidden"
                 ></span>
 
                 <span
-                    class="iconify solar--chevron-last-line-duotone is-drawer-close:hidden"
+                    class="iconify solar--chevron-first-bold-duotone is-drawer-close:hidden"
                 ></span>
                 <span class="is-drawer-close:hidden pl-2 text-base">
                     "Collapse Menu"

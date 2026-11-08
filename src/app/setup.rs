@@ -66,7 +66,6 @@ async fn setup_layout(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
 
     Ok(view! {
         <div class="flex flex-row justify-center gap-10 p-12 min-h-full">
-            //
             <div class="flex-1 flex">
                 <h1 class="text-5xl">
                     "Server"
