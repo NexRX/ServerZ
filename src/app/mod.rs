@@ -30,7 +30,7 @@ async fn root(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
     const GEIST: Font = fontsource_font!(GEIST, weight: [400, 700], style: Normal);
 
     let path = uri(cx).path();
-    if !path.starts_with("/setup") && path.starts_with("/showcase") {
+    if !path.starts_with("/setup") && !path.starts_with("/showcase") {
         require_server(cx).await?;
     }
 

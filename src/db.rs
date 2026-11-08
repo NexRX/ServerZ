@@ -68,6 +68,7 @@ pub trait Singleton: Sized {
     const SINGLETON_ID: u8 = 0;
 
     async fn get(db: &mut dyn Executor) -> Result<Self>;
+    #[allow(dead_code)]
     async fn fetch(cx: &Cx) -> Result<Self> {
         Self::get(&mut db(cx)).await
     }
