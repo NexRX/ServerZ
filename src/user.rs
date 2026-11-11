@@ -1,5 +1,5 @@
+use anyhow::ensure;
 use jiff::Timestamp;
-use miette::{IntoDiagnostic, ensure};
 use toasty::{Embed, Model, stmt::Uuid};
 use topcoat::context::{Cx, memoize};
 use tracing::instrument;
@@ -27,13 +27,12 @@ pub enum Role {
 
 #[memoize(as_ref)]
 #[instrument(level = "debug", skip_all, ret)]
-pub async fn ensure_owner_created(cx: &Cx) -> miette::Result<()> {
+pub async fn ensure_owner_created(cx: &Cx) -> anyhow::Result<()> {
     let is_created = User::filter(User::fields().role().eq(Role::Owner))
         .count()
         .exec(&mut db(cx))
         .await
-        .map(|count| count > 0)
-        .into_diagnostic()?;
+        .map(|count| count > 0)?;
     ensure!(is_created, "No user is created");
 
     Ok(())

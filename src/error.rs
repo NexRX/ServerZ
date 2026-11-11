@@ -1,2 +1,44 @@
 pub const CODE_DB_CONNECTION: i32 = 2;
 pub const CODE_DB_MIGRATION: i32 = 3;
+
+/// Wrapper arround, `topcoat::Error::from_anyhow` & `anyhow::anyhow!`. Original docs for `anyhow!`...
+/// Construct an ad-hoc error from a string or existing non-`anyhow` error
+/// value.
+///
+/// This evaluates to an [`Error`][crate::Error]. It can take either just a
+/// string, or a format string with arguments. It also can take any custom type
+/// which implements `Debug` and `Display`.
+///
+/// If called with a single argument whose type implements `std::error::Error`
+/// (in addition to `Debug` and `Display`, which are always required), then that
+/// Error impl's `source` is preserved as the `source` of the resulting
+/// `anyhow::Error`.
+///
+/// # Example
+///
+/// ```
+/// # type V = ();
+/// #
+/// use anyhow::{anyhow, Result};
+///
+/// fn lookup(key: &str) -> Result<V> {
+///     if key.len() != 16 {
+///         return Err(anyhow!("key length must be 16 characters, got {:?}", key));
+///     }
+///
+///     // ...
+///     # Ok(())
+/// }
+/// ```
+#[macro_export]
+macro_rules! anyhow {
+    ($msg:literal $(,)?) => {
+        topcoat::Error::from_anyhow(anyhow::anyhow!($msg))
+    };
+    ($err:expr $(,)?) => {
+        topcoat::Error::from_anyhow(anyhow::anyhow!($err))
+    };
+    ($fmt:expr, $($arg:tt)*) => {
+        topcoat::Error::from_anyhow(anyhow::anyhow!($fmt, $($arg)*))
+    };
+}

@@ -1,5 +1,5 @@
+use anyhow::ensure;
 use jiff::Timestamp;
-use miette::ensure;
 use toasty::{Executor, Model};
 use topcoat::context::{Cx, memoize};
 use tracing::instrument;
@@ -35,7 +35,7 @@ pub async fn is_server_setup(cx: &Cx) -> bool {
 
 #[memoize(as_ref)]
 #[instrument(level = "debug", skip_all, ret)]
-pub async fn ensure_server_created(cx: &Cx) -> miette::Result<()> {
+pub async fn ensure_server_created(cx: &Cx) -> anyhow::Result<()> {
     ensure!(*is_server_setup(cx).await, "No server is created");
     Ok(())
 }
