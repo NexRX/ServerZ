@@ -154,6 +154,7 @@ pub async fn input(
     #[default] variant: InputVariant,
     #[default(true)] validator: bool,
     #[default] validation_errors: Vec<String>,
+    #[default(true)] rules_tooltip: bool,
 
     #[default] legend: Option<String>,
     #[default] label: Option<String>,
@@ -233,6 +234,32 @@ pub async fn input(
             )
         })
     };
+    let mut rule_descriptions: Vec<String> = Vec::new();
+    if required {
+        rule_descriptions.push("Required".to_owned());
+    }
+    if is_email {
+        rule_descriptions.push("Must be a valid email address".to_owned());
+    }
+    if is_url {
+        rule_descriptions.push("Must be a valid URL".to_owned());
+    }
+    if let Some(n) = min_length {
+        rule_descriptions.push(format!("At least {n} characters"));
+    }
+    if let Some(n) = max_length {
+        rule_descriptions.push(format!("At most {n} characters"));
+    }
+    if let Some(n) = min {
+        rule_descriptions.push(format!("Minimum value {n}"));
+    }
+    if let Some(n) = max {
+        rule_descriptions.push(format!("Maximum value {n}"));
+    }
+    if pattern.is_some() {
+        rule_descriptions.push(pattern_message.clone());
+    }
+
     let min_bound = min;
     let max_bound = max;
     let min = min.unwrap_or(f64::NEG_INFINITY);
@@ -272,6 +299,35 @@ pub async fn input(
                 >
                 if let Some(suffix) = suffix {
                     (suffix)
+                }
+                if rules_tooltip && !rule_descriptions.is_empty() {
+                    <span
+                        class="tooltip tooltip-left cursor-help opacity-60"
+                        tabindex="0"
+                        aria-label="Validation rules"
+                    >
+                        <div class="tooltip-content text-left">
+                            <ul class="list-disc list-inside whitespace-nowrap">
+                                for rule in rule_descriptions {
+                                    <li>(rule)</li>
+                                }
+                            </ul>
+                        </div>
+                        <svg
+                            class="h-[1em]"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                        >
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="M12 16v-4"></path>
+                            <path d="M12 8h.01"></path>
+                        </svg>
+                    </span>
                 }
             </label>
             if validator || has_validation_errors || hint.is_some() {
@@ -336,4 +392,291 @@ pub async fn input(
             }
         </fieldset>
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use topcoat::view::ViewExt;
+
+    fn attrs(pairs: &[(&str, &str)]) -> Attributes {
+        let cx = &Cx::new();
+        let mut attrs = Attributes::new();
+        for (key, value) in pairs {
+            attrs.insert(cx, (*key).to_owned(), (*value).to_owned());
+        }
+        attrs
+    }
+
+    async fn render_without_tooltip(inner: Attributes) -> String {
+        let cx = &Cx::new();
+        view! { input(inner_attrs: inner, rules_tooltip: false) }
+            .single()
+            .await
+            .unwrap()
+            .render(cx)
+    }
+
+    async fn render(ty: InputType, inner: Attributes, errors: Vec<String>) -> String {
+        let cx = &Cx::new();
+        view! { input(ty: ty, inner_attrs: inner, validation_errors: errors) }
+            .single()
+            .await
+            .unwrap()
+            .render(cx)
+    }
+
+    /// Returns the opening `<p ...>` tag that precedes `message`.
+    fn tag_for<'a>(html: &'a str, message: &str) -> &'a str {
+        let end = html
+            .find(message)
+            .unwrap_or_else(|| panic!("`{message}` not rendered in {html}"));
+        let start = html[..end].rfind("<p").unwrap();
+        &html[start..end]
+    }
+
+    fn is_hidden(html: &str, message: &str) -> bool {
+        tag_for(html, message).contains(" hidden")
+    }
+
+    #[test]
+    fn email_helper() {
+        assert!(looks_like_email("a@b.co"));
+        assert!(!looks_like_email("ab.co"));
+        assert!(!looks_like_email("@b"));
+        assert!(!looks_like_email("a@"));
+        assert!(!looks_like_email("a@@b"));
+        assert!(!looks_like_email("a b@c"));
+    }
+
+    #[test]
+    fn url_helper() {
+        assert!(looks_like_url("https://example.com"));
+        assert!(looks_like_url("ftp+x://host"));
+        assert!(!looks_like_url("example.com"));
+        assert!(!looks_like_url("://x"));
+        assert!(!looks_like_url("1http://x"));
+        assert!(!looks_like_url("http://"));
+        assert!(!looks_like_url("http://a b"));
+    }
+
+    #[test]
+    fn attribute_helpers() {
+        let a = attrs(&[("minlength", "3")]);
+        assert_eq!(attr_str(&a, "minlength").as_deref(), Some("3"));
+        assert_eq!(attr_str(&a, "missing"), None);
+        assert!(attr_present(&a, "minlength"));
+        assert!(!attr_present(&a, "missing"));
+    }
+
+    #[tokio::test]
+    async fn no_rules_renders_no_messages() {
+        let html = render(InputType::Text, Attributes::new(), vec![]).await;
+        assert!(!html.contains("This field is required."));
+        assert!(!html.contains("data-topcoat-bind:hidden"));
+    }
+
+    #[tokio::test]
+    async fn required_rule() {
+        let msg = "This field is required.";
+        let empty = render(InputType::Text, attrs(&[("required", "")]), vec![]).await;
+        assert!(!is_hidden(&empty, msg));
+        assert!(empty.contains("data-topcoat-bind:hidden"));
+
+        let filled = render(
+            InputType::Text,
+            attrs(&[("required", ""), ("value", "x")]),
+            vec![],
+        )
+        .await;
+        assert!(is_hidden(&filled, msg));
+    }
+
+    #[tokio::test]
+    async fn minlength_rule() {
+        let msg = "Must be at least 3 characters.";
+        let short = attrs(&[("minlength", "3"), ("value", "ab")]);
+        assert!(!is_hidden(
+            &render(InputType::Text, short, vec![]).await,
+            msg
+        ));
+        let ok = attrs(&[("minlength", "3"), ("value", "abc")]);
+        assert!(is_hidden(&render(InputType::Text, ok, vec![]).await, msg));
+        let empty = attrs(&[("minlength", "3")]);
+        assert!(is_hidden(
+            &render(InputType::Text, empty, vec![]).await,
+            msg
+        ));
+    }
+
+    #[tokio::test]
+    async fn maxlength_rule() {
+        let msg = "Must be at most 3 characters.";
+        let long = attrs(&[("maxlength", "3"), ("value", "abcd")]);
+        assert!(!is_hidden(
+            &render(InputType::Text, long, vec![]).await,
+            msg
+        ));
+        let ok = attrs(&[("maxlength", "3"), ("value", "abc")]);
+        assert!(is_hidden(&render(InputType::Text, ok, vec![]).await, msg));
+    }
+
+    #[tokio::test]
+    async fn length_is_measured_in_utf8_bytes() {
+        let msg = "Must be at most 2 characters.";
+        let a = attrs(&[("maxlength", "2"), ("value", "éé")]);
+        assert!(!is_hidden(&render(InputType::Text, a, vec![]).await, msg));
+    }
+
+    #[tokio::test]
+    async fn min_and_max_rules() {
+        let min_msg = "Must be at least 1.";
+        let max_msg = "Must be at most 10.";
+        let low = attrs(&[("min", "1"), ("max", "10"), ("value", "0")]);
+        let html = render(InputType::Number, low, vec![]).await;
+        assert!(!is_hidden(&html, min_msg));
+        assert!(is_hidden(&html, max_msg));
+
+        let high = attrs(&[("min", "1"), ("max", "10"), ("value", "11")]);
+        let html = render(InputType::Number, high, vec![]).await;
+        assert!(is_hidden(&html, min_msg));
+        assert!(!is_hidden(&html, max_msg));
+
+        let ok = attrs(&[("min", "1"), ("max", "10"), ("value", "5")]);
+        let html = render(InputType::Number, ok, vec![]).await;
+        assert!(is_hidden(&html, min_msg));
+        assert!(is_hidden(&html, max_msg));
+
+        let empty = attrs(&[("min", "1"), ("max", "10")]);
+        let html = render(InputType::Number, empty, vec![]).await;
+        assert!(is_hidden(&html, min_msg));
+        assert!(is_hidden(&html, max_msg));
+    }
+
+    #[tokio::test]
+    async fn email_rule() {
+        let msg = "Enter a valid email address.";
+        let bad = attrs(&[("value", "nope")]);
+        assert!(!is_hidden(
+            &render(InputType::Email, bad, vec![]).await,
+            msg
+        ));
+        let ok = attrs(&[("value", "a@b.co")]);
+        assert!(is_hidden(&render(InputType::Email, ok, vec![]).await, msg));
+        let empty = Attributes::new();
+        assert!(is_hidden(
+            &render(InputType::Email, empty, vec![]).await,
+            msg
+        ));
+    }
+
+    #[tokio::test]
+    async fn url_rule() {
+        let msg = "Enter a valid URL.";
+        let bad = attrs(&[("value", "example.com")]);
+        assert!(!is_hidden(&render(InputType::Url, bad, vec![]).await, msg));
+        let ok = attrs(&[("value", "https://example.com")]);
+        assert!(is_hidden(&render(InputType::Url, ok, vec![]).await, msg));
+    }
+
+    #[tokio::test]
+    async fn pattern_rule_uses_title_and_is_browser_bound() {
+        let a = attrs(&[("pattern", "[a-z]+"), ("title", "Letters only")]);
+        let html = render(InputType::Text, a, vec![]).await;
+        assert!(html.contains("Letters only"));
+        assert!(html.contains("data-topcoat-bind:hidden"));
+        assert!(html.contains("new RegExp"));
+
+        let default = attrs(&[("pattern", "[a-z]+")]);
+        let html = render(InputType::Text, default, vec![]).await;
+        assert!(html.contains("Must match the requested format."));
+    }
+
+    #[tokio::test]
+    async fn multiple_rules_can_fail_together() {
+        let a = attrs(&[
+            ("required", ""),
+            ("minlength", "5"),
+            ("pattern", "[0-9]+"),
+            ("value", "ab"),
+        ]);
+        let html = render(InputType::Text, a, vec![]).await;
+        assert!(is_hidden(&html, "This field is required."));
+        assert!(!is_hidden(&html, "Must be at least 5 characters."));
+    }
+
+    #[tokio::test]
+    async fn server_errors_render_without_rules() {
+        let html = render(
+            InputType::Text,
+            Attributes::new(),
+            vec!["Username taken".into()],
+        )
+        .await;
+        assert!(html.contains("Username taken"));
+        assert!(html.contains("input-error"));
+        assert!(html.contains("validator"));
+    }
+
+    /// Every `raw!` snippet must return a runtime value, not a JS primitive,
+    /// or the browser binding throws and the message never updates.
+    #[tokio::test]
+    async fn raw_javascript_returns_runtime_values() {
+        let html = render(InputType::Email, attrs(&[("min", "1")]), vec![]).await;
+        assert!(html.contains("cx.hydrate(/"), "{html}");
+        let html = render(InputType::Number, attrs(&[("min", "1")]), vec![]).await;
+        assert!(html.contains("cx.hydrate(String("), "{html}");
+        let html = render(InputType::Text, attrs(&[("pattern", "a")]), vec![]).await;
+        assert!(html.contains("cx.hydrate(String("), "{html}");
+        assert!(!html.contains("[..."), "{html}");
+    }
+
+    #[tokio::test]
+    async fn tooltip_lists_all_rules() {
+        let a = attrs(&[
+            ("required", ""),
+            ("minlength", "3"),
+            ("maxlength", "30"),
+            ("pattern", "[a-z]+"),
+            ("title", "Letters only"),
+        ]);
+        let html = render(InputType::Text, a, vec![]).await;
+        let tip = &html[html.find("tooltip-content").expect("tooltip")..];
+        for rule in [
+            "Required",
+            "At least 3 characters",
+            "At most 30 characters",
+            "Letters only",
+        ] {
+            assert!(tip.contains(rule), "{rule} missing in {html}");
+        }
+    }
+
+    #[tokio::test]
+    async fn tooltip_includes_type_and_range_rules() {
+        let html = render(InputType::Email, attrs(&[("min", "1")]), vec![]).await;
+        assert!(html.contains("Must be a valid email address"), "{html}");
+        assert!(html.contains("Minimum value 1"), "{html}");
+        let html = render(InputType::Url, Attributes::new(), vec![]).await;
+        assert!(html.contains("Must be a valid URL"), "{html}");
+    }
+
+    #[tokio::test]
+    async fn tooltip_can_be_disabled() {
+        let html = render_without_tooltip(attrs(&[("required", "")])).await;
+        assert!(!html.contains("tooltip"), "{html}");
+        assert!(html.contains("This field is required."), "{html}");
+    }
+
+    #[tokio::test]
+    async fn no_tooltip_without_rules() {
+        let html = render(InputType::Text, Attributes::new(), vec![]).await;
+        assert!(!html.contains("tooltip"), "{html}");
+    }
+
+    #[tokio::test]
+    async fn input_wires_value_tracking() {
+        let html = render(InputType::Text, attrs(&[("required", "")]), vec![]).await;
+        assert!(html.contains("data-topcoat-on:input"));
+    }
 }

@@ -22,7 +22,7 @@ struct OwnerForm {
 #[page]
 pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
     Ok(view! {
-        <form>
+        <form class="flex flex-col items-center h-full">
             input(
                 label: Some("Username".into()),
                 label_for: Some(OwnerFormValidation::Username.name().into()),
@@ -34,7 +34,10 @@ pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
                 label_for: Some(OwnerFormValidation::Password.name().into()),
                 inner_attrs: OwnerFormValidation::Password.attrs(cx)
             )
-            button(attrs: attributes!(type="submit"), "Submit")
+            button(
+                attrs: attributes!(type="submit" class="mt-auto ml-auto self-end"),
+                "Submit"
+            )
         </form>
     })
 }
