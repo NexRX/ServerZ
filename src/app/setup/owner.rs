@@ -1,4 +1,5 @@
 use crate::components::prelude::*;
+use crate::crypto::Secret;
 use crate::{ensure, user::ensure_owner_created};
 use garde::Validate;
 use schemars::JsonSchema;
@@ -16,11 +17,9 @@ use tracing::instrument;
 #[derive(Debug, JsonSchema, Validate, FormValidation, Serialize, Deserialize)]
 struct CreateOwner {
     #[garde(ascii, length(min = 3, max = 30))]
-    #[schemars(length(min = 3, max = 30))]
     username: String,
-    #[garde(length(min = 3))]
-    #[schemars(length(min = 3))]
-    password: String,
+    #[garde(dive)]
+    password: Secret,
 }
 
 #[instrument(level = "info", skip(cx), ret, err)]

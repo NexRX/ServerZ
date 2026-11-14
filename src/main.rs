@@ -2,6 +2,7 @@
 
 mod app;
 mod components;
+mod crypto;
 mod db;
 mod error;
 mod features;
