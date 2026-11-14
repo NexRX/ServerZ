@@ -14,7 +14,7 @@ use topcoat::{
     },
     runtime::RuntimeLayer,
     tailwind,
-    view::{View, attributes, class, component, error_boundary, view},
+    view::{View, component, error_boundary, view},
 };
 
 topcoat::router::not_found!();

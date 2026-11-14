@@ -9,6 +9,7 @@ use crate::db::db;
 #[derive(Debug, Model)]
 pub struct User {
     #[key]
+    #[auto]
     id: Uuid,
     username: String,
     password_hash: String,
@@ -34,6 +35,19 @@ pub async fn ensure_owner_created(cx: &Cx) -> anyhow::Result<()> {
         .await
         .map(|count| count > 0)?;
     ensure!(is_created, "No user is created");
+
+    Ok(())
+}
+
+#[memoize(as_ref)]
+#[instrument(level = "debug", skip_all, ret)]
+pub async fn ensure_owner_not_created(cx: &Cx) -> anyhow::Result<()> {
+    let is_not_created = User::filter(User::fields().role().eq(Role::Owner))
+        .count()
+        .exec(&mut db(cx))
+        .await
+        .map(|count| count == 0)?;
+    ensure!(is_not_created, "User is already created");
 
     Ok(())
 }

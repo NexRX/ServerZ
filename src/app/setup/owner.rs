@@ -1,11 +1,14 @@
+use crate::app::setup::SetupStep;
 use crate::components::prelude::*;
 use crate::crypto::Secret;
+use crate::db::db;
+use crate::user::{Role, User, ensure_owner_not_created};
 use crate::{ensure, user::ensure_owner_created};
 use garde::Validate;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use server_z_macros::FormValidation;
-use topcoat::router::error::{SeeOther, see_other};
+use topcoat::router::error::{RouterErrorExt as _, SeeOther, see_other};
 use topcoat::{
     Result,
     context::Cx,
@@ -31,11 +34,23 @@ async fn create_owner(cx: &Cx, Form(input): Form<CreateOwner>) -> Result<SeeOthe
     )?;
     input.validate()?;
 
-    Ok(see_other("/setup/server"))
+    toasty::create!(User {
+        username: input.username,
+        password_hash: input.password.0,
+        role: Role::Owner,
+    })
+    .exec(&mut db(cx))
+    .await?;
+
+    Ok(see_other(SetupStep::Server.to_uri()))
 }
 
 #[page]
 pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
+    ensure_owner_not_created(cx)
+        .await
+        .ok_or_redirect(SetupStep::Server.to_uri())?;
+
     Ok(view! {
         <form
             method="POST"
@@ -57,7 +72,8 @@ pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
             )
             button(
                 attrs: attributes!(type="submit" class="mt-auto ml-auto self-end"),
-                "Submit"
+                "Next"
+                <div class="iconify solar--arrow-right-bold-duotone" />
             )
         </form>
     })

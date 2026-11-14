@@ -20,20 +20,22 @@ use tracing::instrument;
 pub const SETUP_ROOT: &str = "/setup";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Display, Default)]
-enum SetupStep {
+pub(in super::setup) enum SetupStep {
     #[default]
     Owner,
     Server,
+    Done,
 }
 
 impl SetupStep {
     #[allow(dead_code)]
-    pub const TOTAL: u8 = 2;
+    pub const TOTAL: u8 = 3;
 
     pub const fn number(self) -> u8 {
         match self {
             SetupStep::Owner => 1,
             SetupStep::Server => 2,
+            SetupStep::Done => 3,
         }
     }
 
@@ -44,6 +46,8 @@ impl SetupStep {
             Some(Self::Owner)
         } else if path.starts_with(Self::Server.to_uri()) {
             Some(Self::Server)
+        } else if path.starts_with(Self::Done.to_uri()) {
+            Some(Self::Done)
         } else {
             None
         }
@@ -53,6 +57,7 @@ impl SetupStep {
         match self {
             Self::Owner => concat!(SETUP_ROOT, "/owner"),
             Self::Server => concat!(SETUP_ROOT, "/server"),
+            Self::Done => concat!(SETUP_ROOT, "/done"),
         }
     }
 }
@@ -64,6 +69,7 @@ async fn setup_layout(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
     let setup_title = match current_step {
         SetupStep::Owner => "Owner Account",
         SetupStep::Server => "Server Config",
+        SetupStep::Done => "Setup Finished",
     };
     let setup_description = match current_step {
         SetupStep::Owner => {
@@ -72,6 +78,7 @@ async fn setup_layout(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
         SetupStep::Server => {
             "Enter and confirm the setup details for your DayZ server as this will define where your server is created and persisted to."
         }
+        SetupStep::Done => "All done, Enjoy!",
     };
 
     Ok(view! {
@@ -119,27 +126,37 @@ pub async fn setup(cx: &Cx) -> Result<()> {
 #[component]
 async fn step_display(cx: &Cx, current_step: SetupStep) -> Result<impl View> {
     Ok(view! {
-        <div class="flex flex-col items-center">
-            <span class="font-bold text-sm">"Progress"</span>
-            steps(
-                <div class="contents">
-                    step(
-                        content: "1",
-                        color: match current_step.number() {
-                            1 => StepColor::Accent,
-                            _ => StepColor::Success,
-                        }
-                    )
-                    step(
-                        content: "2",
-                        color: match current_step.number() {
-                            2 => StepColor::Accent,
-                            3 => StepColor::Success,
-                            _ => StepColor::default(),
-                        }
-                    )
-                </div>
-            )
-        </div>
+        tooltip(
+            alignment: TooltipAlignment::Start,
+            text: "Setup Progres".to_string(),
+            <div class="flex flex-col items-center">
+                steps(
+                    <div class="contents">
+                        step(
+                            content: "1",
+                            color: match current_step.number() {
+                                SetupStep::TOTAL => StepColor::Success,
+                                _ => StepColor::Accent,
+                            }
+                        )
+                        step(
+                            content: "2",
+                            color: match current_step.number() {
+                                2 => StepColor::Accent,
+                                SetupStep::TOTAL => StepColor::Success,
+                                _ => StepColor::default(),
+                            }
+                        )
+                        step(
+                            content: "3",
+                            color: match current_step.number() {
+                                SetupStep::TOTAL => StepColor::Success,
+                                _ => StepColor::default(),
+                            }
+                        )
+                    </div>
+                )
+            </div>
+        )
     })
 }

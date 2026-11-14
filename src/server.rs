@@ -28,7 +28,7 @@ impl Singleton for Server {
 }
 
 #[memoize]
-#[instrument(level = "debug", skip_all, ret)]
+#[instrument(level = "trace", skip_all, ret)]
 pub async fn is_server_setup(cx: &Cx) -> bool {
     Server::get(&mut db(cx)).await.is_ok()
 }
@@ -37,5 +37,12 @@ pub async fn is_server_setup(cx: &Cx) -> bool {
 #[instrument(level = "debug", skip_all, ret)]
 pub async fn ensure_server_created(cx: &Cx) -> anyhow::Result<()> {
     ensure!(*is_server_setup(cx).await, "No server is created");
+    Ok(())
+}
+
+#[memoize(as_ref)]
+#[instrument(level = "debug", skip_all, ret)]
+pub async fn ensure_server_not_created(cx: &Cx) -> anyhow::Result<()> {
+    ensure!(!*is_server_setup(cx).await, "Server is already created");
     Ok(())
 }
