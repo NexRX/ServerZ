@@ -4,16 +4,25 @@ use topcoat::{
     context::Cx,
     router::request::original_uri,
     runtime::Event,
-    view::{Child, View, attributes, class, component, view},
+    view::{Attributes, Child, View, attributes, class, component, view},
 };
 
 #[component]
-pub async fn app_menu(cx: &Cx, #[default] child: Child<'_>) -> Result<impl View> {
+pub async fn app_menu(
+    cx: &Cx,
+    #[default] mut attrs: Attributes,
+    #[default] hide: bool,
+    #[default] child: Child<'_>,
+) -> Result<impl View> {
     // Collapsed by default; the last state comes back from a cookie the browser keeps in sync.
     let menu = persistent_signal(cx, "serverz-app-menu-open", || false);
 
     Ok(view! {
-        <div class="drawer lg:drawer-open" :data-persist=(menu.sync())>
+        <div
+            class=(class!("drawer lg:drawer-open", attrs.remove("class")))
+            :data-persist=(menu.sync())
+            (attrs)
+        >
             <input
                 id="app-menu"
                 type="checkbox"
@@ -23,7 +32,12 @@ pub async fn app_menu(cx: &Cx, #[default] child: Child<'_>) -> Result<impl View>
             />
             <div class="drawer-content">(child)</div>
 
-            <div class="drawer-side is-drawer-close:overflow-visible">
+            <div
+                class=(class!(
+                    "drawer-side is-drawer-close:overflow-visible",
+                    "hidden" if hide,
+                ))
+            >
                 <label for="app-menu" aria-label="close sidebar" class="drawer-overlay"></label>
                 <div
                     class="flex min-h-full flex-col items-start bg-base-200 is-drawer-close:w-16 is-drawer-open:w-52"

@@ -52,6 +52,25 @@
   }
 }
 
+.setup-shell {
+  background:
+    radial-gradient(circle at 18% 18%, color-mix(in oklch, var(--color-primary) 12%, transparent), transparent 30rem),
+    radial-gradient(circle at 82% 86%, color-mix(in oklch, var(--color-secondary) 10%, transparent), transparent 28rem),
+    var(--color-base-100);
+}
+
+.setup-grid {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    linear-gradient(color-mix(in oklch, var(--color-base-content) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in oklch, var(--color-base-content) 7%, transparent) 1px, transparent 1px);
+  background-size: 4rem 4rem;
+  mask-image: radial-gradient(ellipse at center, black 15%, transparent 78%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 15%, transparent 78%);
+}
 
 @view-transition {
   navigation: auto;

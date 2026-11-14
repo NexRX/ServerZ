@@ -5,6 +5,7 @@ pub mod alert;
 pub mod aura;
 pub mod avatar;
 pub mod badge;
+pub mod bg_grid;
 pub mod breadcrumbs;
 pub mod button;
 pub mod calendar;
@@ -83,6 +84,7 @@ pub mod prelude {
     pub use super::aura::*;
     pub use super::avatar::*;
     pub use super::badge::*;
+    pub use super::bg_grid::*;
     pub use super::breadcrumbs::*;
     pub use super::button::*;
     pub use super::calendar::*;

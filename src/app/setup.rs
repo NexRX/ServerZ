@@ -75,15 +75,18 @@ async fn setup_layout(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
     };
 
     Ok(view! {
-        <div class="flex flex-row justify-center gap-10 p-12 min-h-full">
-            <div class="flex-1 flex">
+        <div
+            class="setup-shell relative isolate flex min-h-screen flex-row justify-center gap-10 overflow-hidden p-12"
+        >
+            bg_grid()
+            <div class="relative z-10 flex-1 flex">
                 <h1 class="text-5xl text-base-content/90">
                     "Server"
                     <span class="text-primary align-text-bottom">"Z"</span>
                     " Setup"
                 </h1>
             </div>
-            <div class="flex-1 flex justify-center">
+            <div class="relative z-10 flex-1 flex justify-center">
                 <div
                     class="w-140 bg-base-200 border-base-300 border min-h-140 my-auto p-6 gap-4 flex flex-col rounded-xl"
                 >

@@ -14,7 +14,7 @@ use topcoat::{
     },
     runtime::RuntimeLayer,
     tailwind,
-    view::{View, component, error_boundary, view},
+    view::{View, attributes, class, component, error_boundary, view},
 };
 
 topcoat::router::not_found!();
@@ -31,6 +31,8 @@ pub fn router(db: Db) -> Router {
 #[layout]
 async fn root(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
     const GEIST: Font = fontsource_font!(GEIST, weight: [400, 700], style: Normal);
+    let path = uri(cx).path();
+    let is_hide_menu = path.starts_with("/setup");
 
     let path = uri(cx).path();
     if !path.starts_with("/setup") && !path.starts_with("/showcase") {
@@ -59,7 +61,7 @@ async fn root(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
                             Err(error)
                         }
                     },
-                    app_menu((slot))
+                    app_menu(hide: is_hide_menu, (slot))
                 )
             </body>
         </html>
