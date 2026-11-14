@@ -3,14 +3,24 @@ use topcoat::{
     Result,
     context::Cx,
     router::request::original_uri,
+    runtime::Event,
     view::{Child, View, attributes, class, component, view},
 };
 
 #[component]
 pub async fn app_menu(cx: &Cx, #[default] child: Child<'_>) -> Result<impl View> {
+    // Collapsed by default; the last state comes back from a cookie the browser keeps in sync.
+    let menu = persistent_signal(cx, "serverz-app-menu-open", || false);
+
     Ok(view! {
-        <div class="drawer lg:drawer-open">
-            <input id="app-menu" type="checkbox" class="drawer-toggle inline" />
+        <div class="drawer lg:drawer-open" :data-persist=(menu.sync())>
+            <input
+                id="app-menu"
+                type="checkbox"
+                class="drawer-toggle inline"
+                :checked=$(menu.get())
+                @change=$(|e: Event| menu.set(e.target.checked))
+            />
             <div class="drawer-content">(child)</div>
 
             <div class="drawer-side is-drawer-close:overflow-visible">

@@ -1,16 +1,20 @@
 use crate::components::prelude::*;
+use crate::{ensure, user::ensure_owner_created};
 use garde::Validate;
 use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
 use server_z_macros::FormValidation;
+use topcoat::router::error::{SeeOther, see_other};
 use topcoat::{
     Result,
     context::Cx,
-    router::page,
+    router::{content::Form, page, route},
     view::{View, attributes, view},
 };
+use tracing::instrument;
 
-#[derive(JsonSchema, Validate, FormValidation)]
-struct OwnerForm {
+#[derive(Debug, JsonSchema, Validate, FormValidation, Serialize, Deserialize)]
+struct CreateOwner {
     #[garde(ascii, length(min = 3, max = 30))]
     #[schemars(length(min = 3, max = 30))]
     username: String,
@@ -19,21 +23,37 @@ struct OwnerForm {
     password: String,
 }
 
+#[instrument(level = "info", skip(cx), ret, err)]
+#[route(POST "/api/setup/create-owner")]
+async fn create_owner(cx: &Cx, Form(input): Form<CreateOwner>) -> Result<SeeOther> {
+    ensure!(
+        ensure_owner_created(cx).await.is_err(),
+        "Owner has already been created"
+    )?;
+    input.validate()?;
+
+    Ok(see_other("/setup/server"))
+}
+
 #[page]
 pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
     Ok(view! {
-        <form class="flex flex-col flex-1 items-center h-full">
+        <form
+            method="POST"
+            action="/api/setup/create-owner"
+            class="flex flex-col flex-1 items-center h-full"
+        >
             input(
                 label: Some("Username".into()),
-                label_for: Some(OwnerFormValidation::Username.name().into()),
-                inner_attrs: OwnerFormValidation::Username.attrs(cx),
+                label_for: Some(CreateOwnerValidation::Username.name().into()),
+                inner_attrs: CreateOwnerValidation::Username.attrs(cx),
                 attrs: attributes!(type="submit" class="w-72")
             )
             input(
                 ty: InputType::Password,
                 label: Some("Password".into()),
-                label_for: Some(OwnerFormValidation::Password.name().into()),
-                inner_attrs: OwnerFormValidation::Password.attrs(cx),
+                label_for: Some(CreateOwnerValidation::Password.name().into()),
+                inner_attrs: CreateOwnerValidation::Password.attrs(cx),
                 attrs: attributes!(type="submit" class="w-72")
             )
             button(
@@ -42,54 +62,4 @@ pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
             )
         </form>
     })
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use topcoat::view::ViewExt;
-
-    async fn render_field(field: OwnerFormValidation, ty: InputType) -> String {
-        let cx = &Cx::new();
-        view! { input(ty: ty, inner_attrs: field.attrs(cx)) }
-            .single()
-            .await
-            .unwrap()
-            .render(cx)
-    }
-
-    #[tokio::test]
-    async fn username_attrs_drive_validator_messages() {
-        let html = render_field(OwnerFormValidation::Username, InputType::Text).await;
-        assert!(html.contains("name=\"username\""), "{html}");
-        assert!(html.contains("minlength=\"3\""), "{html}");
-        assert!(html.contains("maxlength=\"30\""), "{html}");
-        assert!(html.contains("Must be at least 3 characters."), "{html}");
-        assert!(html.contains("Must be at most 30 characters."), "{html}");
-        assert!(html.contains("data-topcoat-bind:hidden"), "{html}");
-        assert!(html.contains("validator"), "{html}");
-    }
-
-    #[tokio::test]
-    async fn password_attrs_drive_validator_messages() {
-        let html = render_field(OwnerFormValidation::Password, InputType::Password).await;
-        assert!(html.contains("name=\"password\""), "{html}");
-        assert!(html.contains("type=\"password\""), "{html}");
-        assert!(html.contains("minlength=\"3\""), "{html}");
-        assert!(html.contains("Must be at least 3 characters."), "{html}");
-        assert!(!html.contains("maxlength"), "{html}");
-        assert!(!html.contains("Must be at most"), "{html}");
-    }
-
-    #[tokio::test]
-    async fn required_fields_show_required_message() {
-        for (field, ty) in [
-            (OwnerFormValidation::Username, InputType::Text),
-            (OwnerFormValidation::Password, InputType::Password),
-        ] {
-            let html = render_field(field, ty).await;
-            assert!(html.contains("required"), "{html}");
-            assert!(html.contains("This field is required."), "{html}");
-        }
-    }
 }

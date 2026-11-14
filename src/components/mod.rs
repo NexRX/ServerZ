@@ -46,6 +46,7 @@ pub mod modal;
 pub mod navbar;
 pub mod otp;
 pub mod pagination;
+pub mod persistent_signal;
 pub mod progress;
 pub mod radial_progress;
 pub mod radio;
@@ -123,6 +124,7 @@ pub mod prelude {
     pub use super::navbar::*;
     pub use super::otp::*;
     pub use super::pagination::*;
+    pub use super::persistent_signal::*;
     pub use super::progress::*;
     pub use super::radial_progress::*;
     pub use super::radio::*;
