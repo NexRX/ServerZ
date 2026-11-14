@@ -58,7 +58,8 @@ pub async fn showcase(cx: &Cx) -> Result<impl View> {
                     card_header(card_title("Form controls"))
                     card_content(
                         input(
-                            attrs: attributes! { type="email" placeholder="Email" class="input" }
+                            ty: InputType::Email,
+                            attrs: attributes! { placeholder="Email" }
                         )
                         <div class="flex items-center gap-4">
                             checkbox(attrs: attributes! { class="checkbox-primary" })

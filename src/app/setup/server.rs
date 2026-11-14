@@ -1,3 +1,4 @@
+use crate::components::prelude::*;
 use topcoat::{
     Result,
     context::Cx,
@@ -7,5 +8,5 @@ use topcoat::{
 
 #[page]
 pub async fn setup_server(cx: &Cx) -> Result<impl View> {
-    Ok(view! { <main>"Setup Server"</main> })
+    Ok(view! { <form>"Server"</form> })
 }

@@ -27,6 +27,7 @@ enum SetupStep {
 }
 
 impl SetupStep {
+    #[allow(dead_code)]
     pub const TOTAL: u8 = 2;
 
     pub const fn number(self) -> u8 {
