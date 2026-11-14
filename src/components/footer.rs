@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -16,6 +17,7 @@ pub enum FooterDirection {
 
 #[component]
 pub async fn footer(
+    cx: &Cx,
     #[default] direction: FooterDirection,
     #[default] center: bool,
     #[default] mut attrs: Attributes,

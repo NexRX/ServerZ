@@ -1,10 +1,12 @@
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
 #[component]
 pub async fn list(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -12,6 +14,7 @@ pub async fn list(
 }
 #[component]
 pub async fn list_row(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -21,6 +24,7 @@ pub async fn list_row(
 }
 #[component]
 pub async fn list_col_grow(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -32,6 +36,7 @@ pub async fn list_col_grow(
 }
 #[component]
 pub async fn list_col_wrap(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

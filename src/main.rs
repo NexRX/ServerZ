@@ -19,9 +19,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let db = db::try_connect().await?;
     db::migrate(&db).await?;
 
-    topcoat::start(app::router().app_context(db).build())
-        .await
-        .unwrap();
+    topcoat::start(app::router(db)).await.unwrap();
     Ok(())
 }
 

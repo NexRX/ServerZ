@@ -113,7 +113,7 @@ pub async fn setup(cx: &Cx) -> Result<()> {
 }
 
 #[component]
-async fn step_display(current_step: SetupStep) -> Result<impl View> {
+async fn step_display(cx: &Cx, current_step: SetupStep) -> Result<impl View> {
     Ok(view! {
         <div class="flex flex-col items-center">
             <span class="font-bold text-sm">"Progress"</span>

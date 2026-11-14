@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, View, class, component, view},
 };
 
@@ -54,6 +55,7 @@ pub enum TextareaVariant {
 
 #[component]
 pub async fn textarea(
+    cx: &Cx,
     color: TextareaColor,
     size: TextareaSize,
     variant: TextareaVariant,

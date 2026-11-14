@@ -2,6 +2,7 @@
 
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, StaticClass, View, class, component, view},
 };
 
@@ -68,6 +69,7 @@ impl CardLayout {
 
 #[component]
 pub async fn card(
+    cx: &Cx,
     #[default] variant: CardVariant,
     #[default] size: CardSize,
     #[default] layout: CardLayout,
@@ -92,6 +94,7 @@ pub async fn card(
 
 #[component]
 pub async fn card_header(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -102,6 +105,7 @@ pub async fn card_header(
 
 #[component]
 pub async fn card_title(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -110,20 +114,20 @@ pub async fn card_title(
 
 #[component]
 pub async fn card_description(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(
-        view! {
-            <p class=(class!("text-base-content/70", attrs.remove("class"))) (attrs)>
-                (child)
-            </p>
-        },
-    )
+    Ok(view! {
+        <p class=(class!("text-base-content/70", attrs.remove("class"))) (attrs)>
+            (child)
+        </p>
+    })
 }
 
 #[component]
 pub async fn card_content(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -134,6 +138,7 @@ pub async fn card_content(
 
 #[component]
 pub async fn card_footer(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, View, class, component, view},
 };
 
@@ -44,6 +45,7 @@ pub enum RadioSize {
 
 #[component]
 pub async fn radio(
+    cx: &Cx,
     name: String,
     color: RadioColor,
     size: RadioSize,

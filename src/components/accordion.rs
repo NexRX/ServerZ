@@ -1,10 +1,12 @@
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
 #[component]
 pub async fn accordion(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -14,25 +16,25 @@ pub async fn accordion(
 /// Wraps one accordion group. Pass the same `name` to each accordion item.
 #[component]
 pub async fn accordion_group(
+    cx: &Cx,
     name: String,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(
-        view! {
-            <section
-                data-accordion-group=(name)
-                class=(class!(attrs.remove("class")))
-                (attrs)
-            >
-                (child)
-            </section>
-        },
-    )
+    Ok(view! {
+        <section
+            data-accordion-group=(name)
+            class=(class!(attrs.remove("class")))
+            (attrs)
+        >
+            (child)
+        </section>
+    })
 }
 
 #[component]
 pub async fn accordion_item(
+    cx: &Cx,
     title: String,
     group: String,
     #[default] open: bool,
@@ -46,21 +48,19 @@ pub async fn accordion_item(
         "collapse-arrow"
     };
     let checked = open.then_some("checked");
-    Ok(
-        view! {
-            <div
-                class=(class!(
-                    "collapse",
-                    modifier,
-                    "border border-base-300",
-                    attrs.remove("class"),
-                ))
-                (attrs)
-            >
-                <input type="radio" name=(group) checked=(checked)>
-                <div class="collapse-title font-semibold">(title)</div>
-                <div class="collapse-content">(child)</div>
-            </div>
-        },
-    )
+    Ok(view! {
+        <div
+            class=(class!(
+                "collapse",
+                modifier,
+                "border border-base-300",
+                attrs.remove("class"),
+            ))
+            (attrs)
+        >
+            <input type="radio" name=(group) checked=(checked)>
+            <div class="collapse-title font-semibold">(title)</div>
+            <div class="collapse-content">(child)</div>
+        </div>
+    })
 }

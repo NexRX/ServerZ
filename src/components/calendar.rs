@@ -1,45 +1,45 @@
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
 #[component]
 pub async fn calendar(
+    cx: &Cx,
     #[default] min: String,
     #[default] max: String,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
-    Ok(
-        view! {
-            <input
-                type="date"
-                aria-label="Choose date"
-                min=(min)
-                max=(max)
-                class=(class!("input", attrs.remove("class")))
-                (attrs)
-            >
-        },
-    )
+    Ok(view! {
+        <input
+            type="date"
+            aria-label="Choose date"
+            min=(min)
+            max=(max)
+            class=(class!("input", attrs.remove("class")))
+            (attrs)
+        >
+    })
 }
 
 #[component]
 pub async fn calendar_cally(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(
-        view! {
-            <calendar-date class=(class!("cally", attrs.remove("class"))) (attrs)>
-                (child)
-            </calendar-date>
-        },
-    )
+    Ok(view! {
+        <calendar-date class=(class!("cally", attrs.remove("class"))) (attrs)>
+            (child)
+        </calendar-date>
+    })
 }
 
 /// Cally calendar with a live selected-date output.
 #[component]
 pub async fn calendar_cally_with_output(
+    cx: &Cx,
     output_id: String,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,

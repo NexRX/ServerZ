@@ -1,10 +1,12 @@
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
 #[component]
 pub async fn mockup_code(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -15,15 +17,14 @@ pub async fn mockup_code(
 
 #[component]
 pub async fn mockup_code_line(
+    cx: &Cx,
     #[default] prefix: String,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(
-        view! {
-            <pre data-prefix=(prefix) class=(class!(attrs.remove("class"))) (attrs)>
-                <code>(child)</code>
-            </pre>
-        },
-    )
+    Ok(view! {
+        <pre data-prefix=(prefix) class=(class!(attrs.remove("class"))) (attrs)>
+            <code>(child)</code>
+        </pre>
+    })
 }

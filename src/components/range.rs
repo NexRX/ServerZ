@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -54,6 +55,7 @@ pub enum RangeDirection {
 
 #[component]
 pub async fn range(
+    cx: &Cx,
     #[default] color: RangeColor,
     #[default] size: RangeSize,
     #[default] direction: RangeDirection,

@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -38,6 +39,7 @@ pub enum MaskHalf {
 
 #[component]
 pub async fn mask(
+    cx: &Cx,
     #[default] shape: MaskShape,
     #[default] half: MaskHalf,
     #[default] mut attrs: Attributes,

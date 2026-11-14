@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -16,6 +17,7 @@ pub enum StatsDirection {
 
 #[component]
 pub async fn stats(
+    cx: &Cx,
     direction: StatsDirection,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
@@ -32,6 +34,7 @@ pub async fn stats(
 
 #[component]
 pub async fn stat(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -40,6 +43,7 @@ pub async fn stat(
 
 #[component]
 pub async fn stat_title(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -50,6 +54,7 @@ pub async fn stat_title(
 
 #[component]
 pub async fn stat_value(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -60,6 +65,7 @@ pub async fn stat_value(
 
 #[component]
 pub async fn stat_desc(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

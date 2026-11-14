@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -34,6 +35,7 @@ pub enum RatingMode {
 
 #[component]
 pub async fn rating(
+    cx: &Cx,
     #[default] size: RatingSize,
     #[default] mode: RatingMode,
     #[default] mut attrs: Attributes,

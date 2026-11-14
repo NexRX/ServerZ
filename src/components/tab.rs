@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -38,6 +39,7 @@ pub enum TabStyle {
 
 #[component]
 pub async fn tabs(
+    cx: &Cx,
     style: TabStyle,
     size: TabSize,
     #[default] mut attrs: Attributes,

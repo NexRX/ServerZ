@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -20,6 +21,7 @@ pub enum MegamenuLayout {
 
 #[component]
 pub async fn megamenu(
+    cx: &Cx,
     layout: MegamenuLayout,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,

@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -22,6 +23,7 @@ pub enum ModalPlacement {
 
 #[component]
 pub async fn modal(
+    cx: &Cx,
     #[default] id: String,
     #[default] placement: ModalPlacement,
     #[default] mut attrs: Attributes,

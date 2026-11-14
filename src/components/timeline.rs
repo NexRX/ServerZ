@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -32,6 +33,7 @@ pub enum TimelineStyle {
 
 #[component]
 pub async fn timeline(
+    cx: &Cx,
     #[default] direction: TimelineDirection,
     #[default] style: TimelineStyle,
     #[default] mut attrs: Attributes,

@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -28,6 +29,7 @@ pub enum ChatBubbleColor {
 
 #[component]
 pub async fn chat(
+    cx: &Cx,
     #[default] end: bool,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
@@ -42,6 +44,7 @@ pub async fn chat(
 
 #[component]
 pub async fn chat_bubble(
+    cx: &Cx,
     #[default] color: ChatBubbleColor,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,

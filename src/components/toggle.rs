@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, View, class, component, view},
 };
 
@@ -44,6 +45,7 @@ pub enum ToggleSize {
 
 #[component]
 pub async fn toggle(
+    cx: &Cx,
     #[default] color: ToggleColor,
     #[default] size: ToggleSize,
     #[default] mut attrs: Attributes,

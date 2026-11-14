@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -54,6 +55,7 @@ pub enum TooltipAlignment {
 
 #[component]
 pub async fn tooltip(
+    cx: &Cx,
     text: String,
     #[default] color: TooltipColor,
     #[default] placement: TooltipPlacement,

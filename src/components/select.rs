@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -54,6 +55,7 @@ pub enum SelectVariant {
 
 #[component]
 pub async fn select(
+    cx: &Cx,
     color: SelectColor,
     size: SelectSize,
     variant: SelectVariant,

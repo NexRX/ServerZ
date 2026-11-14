@@ -2,6 +2,7 @@
 
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, Class, StaticClass, View, class, component, view},
 };
 
@@ -125,6 +126,7 @@ pub fn button_variants(
 /// A daisyUI styled button. Attributes and children are forwarded normally.
 #[component]
 pub async fn button(
+    cx: &Cx,
     #[default] color: ButtonColor,
     #[default] variant: ButtonVariant,
     #[default] size: ButtonSize,

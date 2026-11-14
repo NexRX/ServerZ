@@ -7,7 +7,7 @@ use topcoat::{
 };
 
 #[component]
-pub async fn app_menu(#[default] child: Child<'_>) -> Result<impl View> {
+pub async fn app_menu(cx: &Cx, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! {
         <div class="drawer lg:drawer-open">
             <input id="app-menu" type="checkbox" class="drawer-toggle inline" />
@@ -50,7 +50,7 @@ pub async fn app_menu(#[default] child: Child<'_>) -> Result<impl View> {
 }
 
 #[component]
-async fn serverz_branding() -> Result<impl View> {
+async fn serverz_branding(cx: &Cx) -> Result<impl View> {
     Ok(view!(
         <li class="mx-auto is-drawer-close:bg-primary is-drawer-close:rounded-sm">
             <a
@@ -95,7 +95,7 @@ async fn link(cx: &Cx, name: &str, icon: &str, href: &str) -> Result<impl View> 
 }
 
 #[component]
-async fn drawer_control() -> Result<impl View> {
+async fn drawer_control(cx: &Cx) -> Result<impl View> {
     Ok(view!(
         <li>
             <label

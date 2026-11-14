@@ -1,10 +1,15 @@
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, View, class, component, view},
 };
 
 #[component]
-pub async fn otp(#[default] length: u8, #[default] mut attrs: Attributes) -> Result<impl View> {
+pub async fn otp(
+    cx: &Cx,
+    #[default] length: u8,
+    #[default] mut attrs: Attributes,
+) -> Result<impl View> {
     let length = length.clamp(4, 6);
     let script = r#"this.querySelector('input').addEventListener('input',function(){this.closest('.otp').querySelectorAll('[data-otp-digit]').forEach(function(el,i){el.textContent=this.value[i]||''}.bind(this))})"#;
     Ok(view! {

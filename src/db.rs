@@ -1,10 +1,9 @@
-use cached::once;
 use toasty::Db;
 use toasty::Executor;
 use toasty::Result;
 use toasty::migration::MigrationReport;
 use topcoat::context::Cx;
-use topcoat::context::app_context;
+use topcoat::context::context;
 use tracing::error;
 use tracing::info;
 use tracing::instrument;
@@ -19,8 +18,7 @@ pub async fn try_connect() -> Result<Db> {
         .await
 }
 
-#[once]
-pub async fn static_connection() -> Db {
+pub async fn connect_or_exit() -> Db {
     match try_connect().await {
         Ok(pool) => pool,
         Err(err) => {
@@ -32,7 +30,7 @@ pub async fn static_connection() -> Db {
 
 /// Returns the application database handle.
 pub fn db(cx: &Cx) -> Db {
-    app_context::<Db>(cx).clone()
+    context::<Db>(cx).clone()
 }
 
 /// `cargo run -- toasty migration <command>` manages the database schema.
@@ -42,7 +40,7 @@ pub async fn handle_cli_migration() {
     let is_handling = args.peek().is_some_and(|arg| arg == "toasty");
     if is_handling {
         info!("CLI: Running migrations");
-        match toasty_cli::ToastyCli::new(static_connection().await)
+        match toasty_cli::ToastyCli::new(connect_or_exit().await)
             .parse_from(args)
             .await
         {

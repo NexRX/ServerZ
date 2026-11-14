@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -32,6 +33,7 @@ pub enum MenuDirection {
 
 #[component]
 pub async fn menu(
+    cx: &Cx,
     #[default] direction: MenuDirection,
     #[default] size: MenuSize,
     #[default] mut attrs: Attributes,

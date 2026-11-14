@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -38,6 +39,7 @@ pub enum DividerDirection {
 
 #[component]
 pub async fn divider(
+    cx: &Cx,
     #[default] color: DividerColor,
     #[default(DividerDirection::Vertical)] direction: DividerDirection,
     #[default] mut attrs: Attributes,

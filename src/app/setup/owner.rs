@@ -1,10 +1,11 @@
 use topcoat::{
     Result,
+    context::Cx,
     router::page,
     view::{View, view},
 };
 
 #[page]
-pub async fn setup_owner() -> Result<impl View> {
+pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
     Ok(view! { <main>"Setup Owner"</main> })
 }

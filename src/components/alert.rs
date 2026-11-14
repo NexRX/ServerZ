@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -54,6 +55,7 @@ pub enum AlertDirection {
 
 #[component]
 pub async fn alert(
+    cx: &Cx,
     #[default] color: AlertColor,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
@@ -71,6 +73,7 @@ pub async fn alert(
 
 #[component]
 pub async fn alert_styled(
+    cx: &Cx,
     color: AlertColor,
     style: AlertStyle,
     direction: AlertDirection,

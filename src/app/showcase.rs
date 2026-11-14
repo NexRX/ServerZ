@@ -1,12 +1,13 @@
 use crate::components::prelude::*;
 use topcoat::{
     Result,
+    context::Cx,
     router::page,
     view::{View, attributes, view},
 };
 
 #[page]
-pub async fn showcase() -> Result<impl View> {
+pub async fn showcase(cx: &Cx) -> Result<impl View> {
     Ok(view! {
         <main class="mx-auto max-w-5xl space-y-8 px-4 py-12">
             <header class="space-y-2">

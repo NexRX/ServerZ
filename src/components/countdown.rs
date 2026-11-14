@@ -1,5 +1,6 @@
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, View, class, component, view},
 };
 
@@ -9,20 +10,18 @@ pub const fn clamp_countdown(value: u16) -> u16 {
 }
 
 #[component]
-pub async fn countdown(value: u16, #[default] mut attrs: Attributes) -> Result<impl View> {
+pub async fn countdown(cx: &Cx, value: u16, #[default] mut attrs: Attributes) -> Result<impl View> {
     let value = clamp_countdown(value);
-    Ok(
-        view! {
-            <span
-                aria-live="polite"
-                aria-label=(value.to_string())
-                class=(class!("countdown", attrs.remove("class")))
-                (attrs)
-            >
-                <span style=(format!("--value:{value};"))>(value)</span>
-            </span>
-        },
-    )
+    Ok(view! {
+        <span
+            aria-live="polite"
+            aria-label=(value.to_string())
+            class=(class!("countdown", attrs.remove("class")))
+            (attrs)
+        >
+            <span style=(format!("--value:{value};"))>(value)</span>
+        </span>
+    })
 }
 
 #[cfg(test)]

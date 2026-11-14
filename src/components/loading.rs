@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, View, class, component, view},
 };
 
@@ -40,6 +41,7 @@ pub enum LoadingSize {
 
 #[component]
 pub async fn loading(
+    cx: &Cx,
     #[default] style: LoadingStyle,
     #[default] size: LoadingSize,
     #[default] mut attrs: Attributes,

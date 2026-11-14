@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -28,6 +29,7 @@ pub enum CarouselAlignment {
 
 #[component]
 pub async fn carousel(
+    cx: &Cx,
     #[default] direction: CarouselDirection,
     #[default] alignment: CarouselAlignment,
     #[default] mut attrs: Attributes,
@@ -52,6 +54,7 @@ pub async fn carousel(
 
 #[component]
 pub async fn carousel_item(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

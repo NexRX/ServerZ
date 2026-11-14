@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, View, class, component, view},
 };
 
@@ -28,6 +29,7 @@ pub enum ProgressColor {
 
 #[component]
 pub async fn progress(
+    cx: &Cx,
     #[default] value: u8,
     max: u8,
     #[default] color: ProgressColor,

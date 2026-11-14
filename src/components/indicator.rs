@@ -1,10 +1,12 @@
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
 #[component]
 pub async fn indicator(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -15,14 +17,13 @@ pub async fn indicator(
 
 #[component]
 pub async fn indicator_item(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(
-        view! {
-            <span class=(class!("indicator-item badge", attrs.remove("class"))) (attrs)>
-                (child)
-            </span>
-        },
-    )
+    Ok(view! {
+        <span class=(class!("indicator-item badge", attrs.remove("class"))) (attrs)>
+            (child)
+        </span>
+    })
 }

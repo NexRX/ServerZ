@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, View, class, component, view},
 };
 
@@ -54,6 +55,7 @@ pub enum InputVariant {
 
 #[component]
 pub async fn input(
+    cx: &Cx,
     #[default] color: InputColor,
     #[default] size: InputSize,
     #[default] mut attrs: Attributes,

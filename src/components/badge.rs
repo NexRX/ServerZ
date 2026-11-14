@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -60,6 +61,7 @@ pub enum BadgeStyle {
 
 #[component]
 pub async fn badge(
+    cx: &Cx,
     #[default] color: BadgeColor,
     #[default] size: BadgeSize,
     #[default] mut attrs: Attributes,
@@ -82,6 +84,7 @@ pub async fn badge(
 
 #[component]
 pub async fn badge_styled(
+    cx: &Cx,
     color: BadgeColor,
     size: BadgeSize,
     style: BadgeStyle,

@@ -1,10 +1,12 @@
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
 #[component]
 pub async fn drawer(
+    cx: &Cx,
     #[default] end: bool,
     #[default] open: bool,
     #[default] mut attrs: Attributes,
@@ -20,22 +22,25 @@ pub async fn drawer(
 }
 
 #[component]
-pub async fn drawer_toggle(id: String, #[default] mut attrs: Attributes) -> Result<impl View> {
-    Ok(
-        view! {
-            <input
-                id=(id)
-                type="checkbox"
-                autocomplete="off"
-                checked=(attrs.remove("checked").is_some())
-                class=(class!("drawer-toggle", attrs.remove("class")))
-                (attrs)
-            >
-        },
-    )
+pub async fn drawer_toggle(
+    cx: &Cx,
+    id: String,
+    #[default] mut attrs: Attributes,
+) -> Result<impl View> {
+    Ok(view! {
+        <input
+            id=(id)
+            type="checkbox"
+            autocomplete="off"
+            checked=(attrs.remove("checked").is_some())
+            class=(class!("drawer-toggle", attrs.remove("class")))
+            (attrs)
+        >
+    })
 }
 #[component]
 pub async fn drawer_content(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -47,6 +52,7 @@ pub async fn drawer_content(
 }
 #[component]
 pub async fn drawer_side(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -55,33 +61,34 @@ pub async fn drawer_side(
     })
 }
 #[component]
-pub async fn drawer_overlay(for_id: String, #[default] mut attrs: Attributes) -> Result<impl View> {
-    Ok(
-        view! {
-            <label
-                for=(for_id)
-                aria-label="close sidebar"
-                class=(class!("drawer-overlay", attrs.remove("class")))
-                (attrs)
-            ></label>
-        },
-    )
+pub async fn drawer_overlay(
+    cx: &Cx,
+    for_id: String,
+    #[default] mut attrs: Attributes,
+) -> Result<impl View> {
+    Ok(view! {
+        <label
+            for=(for_id)
+            aria-label="close sidebar"
+            class=(class!("drawer-overlay", attrs.remove("class")))
+            (attrs)
+        ></label>
+    })
 }
 #[component]
 pub async fn drawer_button(
+    cx: &Cx,
     for_id: String,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    Ok(
-        view! {
-            <label
-                for=(for_id)
-                class=(class!("drawer-button", attrs.remove("class")))
-                (attrs)
-            >
-                (child)
-            </label>
-        },
-    )
+    Ok(view! {
+        <label
+            for=(for_id)
+            class=(class!("drawer-button", attrs.remove("class")))
+            (attrs)
+        >
+            (child)
+        </label>
+    })
 }

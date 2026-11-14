@@ -1,5 +1,6 @@
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, View, class, component, view},
 };
 
@@ -45,27 +46,26 @@ impl RadialThickness {
 
 #[component]
 pub async fn radial_progress(
+    cx: &Cx,
     #[default] value: u8,
     #[default] size: RadialSize,
     #[default] thickness: RadialThickness,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
     let value = value.min(100);
-    Ok(
-        view! {
-            <div
-                role="progressbar"
-                aria-valuenow=(value.to_string())
-                style=(format!(
-                    "--value:{value};--size:{};--thickness:{};",
-                    size.to_css(),
-                    thickness.to_css(),
-                ))
-                class=(class!("radial-progress", attrs.remove("class")))
-                (attrs)
-            >
-                (format!("{value}%"))
-            </div>
-        },
-    )
+    Ok(view! {
+        <div
+            role="progressbar"
+            aria-valuenow=(value.to_string())
+            style=(format!(
+                "--value:{value};--size:{};--thickness:{};",
+                size.to_css(),
+                thickness.to_css(),
+            ))
+            class=(class!("radial-progress", attrs.remove("class")))
+            (attrs)
+        >
+            (format!("{value}%"))
+        </div>
+    })
 }

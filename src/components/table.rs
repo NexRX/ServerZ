@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -38,6 +39,7 @@ pub enum TableStyle {
 
 #[component]
 pub async fn table(
+    cx: &Cx,
     #[default] size: TableSize,
     #[default] style: TableStyle,
     #[default] zebra: bool,

@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -22,6 +23,7 @@ pub enum DockSize {
 
 #[component]
 pub async fn dock(
+    cx: &Cx,
     #[default] size: DockSize,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
@@ -35,6 +37,7 @@ pub async fn dock(
 
 #[component]
 pub async fn dock_item(
+    cx: &Cx,
     active: bool,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
@@ -49,6 +52,7 @@ pub async fn dock_item(
 
 #[component]
 pub async fn dock_label(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

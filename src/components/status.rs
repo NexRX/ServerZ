@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, View, class, component, view},
 };
 
@@ -44,6 +45,7 @@ pub enum StatusSize {
 
 #[component]
 pub async fn status(
+    cx: &Cx,
     #[default] color: StatusColor,
     #[default] size: StatusSize,
     #[default] mut attrs: Attributes,

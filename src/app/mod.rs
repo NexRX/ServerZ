@@ -2,27 +2,30 @@ pub mod setup;
 pub mod showcase;
 
 use crate::features::{app_menu::app_menu, guards::require_server};
+use toasty::Db;
 use topcoat::{
     Result,
     asset::{AssetBundle, RouterBuilderAssetExt},
     context::Cx,
     font::{Font, fontsource::fontsource_font},
     router::{
-        RouterBuilder, RouterBuilderDiscoverExt, Slot, error::NotFoundError, layout, module_router,
-        page, request::uri,
+        Router, RouterBuilderDiscoverExt, Slot, error::NotFoundError, layout, module_router, page,
+        request::uri,
     },
-    runtime::RouterBuilderRuntimeExt,
+    runtime::RuntimeLayer,
     tailwind,
     view::{View, component, error_boundary, view},
 };
 
 topcoat::router::not_found!();
 
-pub fn router() -> RouterBuilder {
+pub fn router(db: Db) -> Router {
     module_router!()
         .discover()
+        .with(db)
         .assets(AssetBundle::load().unwrap())
-        .runtime()
+        .layer(RuntimeLayer::new())
+        .build()
 }
 
 #[layout]
@@ -64,7 +67,7 @@ async fn root(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
 }
 
 #[page]
-async fn home() -> Result<impl View> {
+async fn home(cx: &Cx) -> Result<impl View> {
     Ok(view! { <main class="mx-auto max-w-2xl px-4 py-16">"hi"</main> })
 }
 

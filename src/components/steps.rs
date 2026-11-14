@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -38,6 +39,7 @@ pub enum StepColor {
 
 #[component]
 pub async fn steps(
+    cx: &Cx,
     #[default] direction: StepsDirection,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
@@ -54,6 +56,7 @@ pub async fn steps(
 
 #[component]
 pub async fn step(
+    cx: &Cx,
     content: impl AsRef<str> + Send,
     #[default] color: StepColor,
     #[default] mut attrs: Attributes,

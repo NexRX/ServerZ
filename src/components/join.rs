@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -16,6 +17,7 @@ pub enum JoinDirection {
 
 #[component]
 pub async fn join(
+    cx: &Cx,
     #[default] direction: JoinDirection,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,

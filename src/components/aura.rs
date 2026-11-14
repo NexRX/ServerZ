@@ -1,6 +1,7 @@
 use server_z_macros::TailwindClass;
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
@@ -40,6 +41,7 @@ pub enum AuraSize {
 
 #[component]
 pub async fn aura(
+    cx: &Cx,
     #[default] style: AuraStyle,
     #[default] size: AuraSize,
     #[default] duration_ms: u32,

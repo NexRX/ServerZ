@@ -1,10 +1,12 @@
 use topcoat::{
     Result,
+    context::Cx,
     view::{Attributes, Child, View, class, component, view},
 };
 
 #[component]
 pub async fn filter(
+    cx: &Cx,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -14,16 +16,14 @@ pub async fn filter(
 }
 
 #[component]
-pub async fn filter_reset(#[default] mut attrs: Attributes) -> Result<impl View> {
-    Ok(
-        view! {
-            <input
-                type="reset"
-                value="×"
-                aria-label="Reset filter"
-                class=(class!("btn btn-square filter-reset", attrs.remove("class")))
-                (attrs)
-            >
-        },
-    )
+pub async fn filter_reset(cx: &Cx, #[default] mut attrs: Attributes) -> Result<impl View> {
+    Ok(view! {
+        <input
+            type="reset"
+            value="×"
+            aria-label="Reset filter"
+            class=(class!("btn btn-square filter-reset", attrs.remove("class")))
+            (attrs)
+        >
+    })
 }
