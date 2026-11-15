@@ -97,9 +97,18 @@ pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
                 fieldset(
                     legend: Some("Logging Options".into()),
                     class: "border border-base-300 rounded-box p-4",
-                    checkbox(label: Some("General (Do)".into()))
-                    checkbox(label: Some("Admin".into()))
-                    checkbox(label: Some("Network".into()))
+                    checkbox(
+                        label: Some("General (Do)".into()),
+                        attrs: ServerCreationValidation::DoLogs.attrs(cx)
+                    )
+                    checkbox(
+                        label: Some("Admin".into()),
+                        attrs: ServerCreationValidation::AdminLogs.attrs(cx)
+                    )
+                    checkbox(
+                        label: Some("Network".into()),
+                        attrs: ServerCreationValidation::NetLogs.attrs(cx)
+                    )
                 )
             </div>
             button(
