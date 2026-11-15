@@ -20,10 +20,11 @@ pub struct User {
     updated_at: Timestamp,
 }
 
-#[derive(Debug, Embed)]
+#[derive(Debug, Embed, Default)]
 pub enum Role {
+    #[default]
+    Guest,
     Owner,
-    Member,
 }
 
 #[memoize(as_ref)]
