@@ -233,6 +233,7 @@ fn expand_form_validation(input: &DeriveInput) -> syn::Result<proc_macro2::Token
                 if *is_boolean {
                     quote! {
                         Self::#variant => {
+                            attrs.insert(cx, "value", "true");
                             if #value {
                                 attrs.insert(cx, "checked", true);
                             }

@@ -35,12 +35,15 @@ struct ServerCreation {
     #[form(value = DEFAULT_LIMIT_FPS)]
     limit_fps: u8,
     #[garde(skip)]
+    #[serde(default)]
     #[form(value = DEFAULT_DO_LOGS)]
     do_logs: bool,
     #[garde(skip)]
+    #[serde(default)]
     #[form(value = DEFAULT_ADMIN_LOGS)]
     admin_logs: bool,
     #[garde(skip)]
+    #[serde(default)]
     #[form(value = DEFAULT_NET_LOGS)]
     net_logs: bool,
 }
