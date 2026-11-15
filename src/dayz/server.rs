@@ -1,24 +1,27 @@
+use crate::{
+    dayz::{launch_params::LaunchParams, mods::Mod},
+    db::{Singleton, db},
+};
 use anyhow::ensure;
 use jiff::Timestamp;
 use toasty::{Executor, Model};
 use topcoat::context::{Cx, memoize};
 use tracing::instrument;
 
-use crate::db::{Singleton, db};
-
 #[derive(Debug, Model)]
 pub struct Server {
     #[key]
+    #[default(Server::SINGLETON_ID)]
     id: u8,
-    profile_path: String,
-    server_path: String,
-    port: u16,
-    cpu_count: u8,
-    battleye: bool,
     #[auto]
     created_at: Timestamp,
     #[auto]
     updated_at: Timestamp,
+
+    #[has_one]
+    launch_params: LaunchParams,
+    #[has_many]
+    mods: Vec<Mod>,
 }
 
 impl Singleton for Server {

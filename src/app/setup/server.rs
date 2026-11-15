@@ -1,8 +1,8 @@
 use crate::app::setup::SetupStep;
 use crate::components::prelude::*;
 use crate::crypto::Secret;
+use crate::dayz::server::{ensure_server_created, ensure_server_not_created};
 use crate::ensure;
-use crate::server::{ensure_server_created, ensure_server_not_created};
 use garde::Validate;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};

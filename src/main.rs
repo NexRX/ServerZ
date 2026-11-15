@@ -3,10 +3,10 @@
 mod app;
 mod components;
 mod crypto;
+mod dayz;
 mod db;
 mod error;
 mod features;
-mod server;
 mod user;
 
 use tracing::info;
