@@ -1,16 +1,20 @@
-use crate::app::setup::SetupStep;
+use super::SetupStep;
 use crate::components::prelude::*;
-use crate::crypto::Secret;
-use crate::dayz::launch_params::{
-    DEFAULT_ADMIN_LOGS, DEFAULT_DO_LOGS, DEFAULT_LIMIT_FPS, DEFAULT_NET_LOGS, DEFAULT_SERVER_PATH,
-    DEFAULT_SERVER_PORT, default_cpus,
+use crate::dayz::Server;
+use crate::dayz::{
+    DEFAULT_ADMIN_LOGS, DEFAULT_DO_LOGS, DEFAULT_LIMIT_FPS, DEFAULT_NET_LOGS,
+    DEFAULT_SERVER_BATTLEYE_RELATIVE_PATH, DEFAULT_SERVER_CONFIG_RELATIVE_PATH,
+    DEFAULT_SERVER_MISSION_RELATIVE_PATH, DEFAULT_SERVER_PATH, DEFAULT_SERVER_PORT,
+    DEFAULT_SERVER_PROFILE_RELATIVE_PATH, default_cpus,
 };
-use crate::dayz::server::{ensure_server_created, ensure_server_not_created};
-use crate::ensure;
+use crate::dayz::{ensure_server_created, ensure_server_not_created};
+use crate::db::db;
+use crate::{anyhow, ensure};
 use garde::Validate;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use server_z_macros::FormValidation;
+use std::fs;
 use topcoat::router::error::{RouterErrorExt as _, SeeOther, see_other};
 use topcoat::{
     Result,
@@ -57,6 +61,26 @@ async fn create_owner(cx: &Cx, Form(input): Form<ServerCreation>) -> Result<SeeO
     )?;
     input.validate()?;
 
+    fs::create_dir_all(&input.server_path)
+        .map_err(|err| anyhow!("Failed to create given server path: {err:#?}"))?;
+    // TODO: Check we have read/write/execute permissions in this folder
+
+    let server_path = input.server_path.as_str();
+    toasty::create!(Server { launch_params: {
+        profile_path: format!("{server_path}{DEFAULT_SERVER_PROFILE_RELATIVE_PATH}"),
+        config_filepath: format!("{server_path}{DEFAULT_SERVER_CONFIG_RELATIVE_PATH}"),
+        mission_path: format!("{server_path}{DEFAULT_SERVER_MISSION_RELATIVE_PATH}"),
+        battleye_path: format!("{server_path}{DEFAULT_SERVER_BATTLEYE_RELATIVE_PATH}"),
+        port: input.port,
+        cpu_count: input.cpu_cores,
+        do_logs: input.do_logs,
+        admin_logs: input.admin_logs,
+        net_logs: input.net_logs,
+        limit_fps: input.limit_fps
+    } })
+    .exec(&mut db(cx))
+    .await?;
+
     Ok(see_other(SetupStep::Done.to_uri()))
 }
 
@@ -98,7 +122,7 @@ pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
                     attrs: attributes!(class="w-38")
                 )
                 fieldset(
-                    legend: Some("Logging Options".into()),
+                    legend: Some("Enabled Logging".into()),
                     class: "border border-base-300 rounded-box p-4",
                     checkbox(
                         label: Some("General (Do)".into()),

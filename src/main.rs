@@ -11,9 +11,15 @@ mod user;
 
 use tracing::info;
 
+#[cfg(debug_assertions)]
+pub const DATA_FOLDER: &str = "./data";
+#[cfg(not(debug_assertions))]
+pub const DATA_FOLDER: &str = "/var/lib/serverz";
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     init_logging();
+    std::fs::create_dir_all(DATA_FOLDER)?;
     db::handle_cli_migration().await;
 
     info!("Starting ServerZ");

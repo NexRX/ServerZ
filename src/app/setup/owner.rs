@@ -1,4 +1,4 @@
-use crate::app::setup::SetupStep;
+use super::SetupStep;
 use crate::components::prelude::*;
 use crate::crypto::Secret;
 use crate::db::db;

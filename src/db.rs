@@ -1,3 +1,4 @@
+use constcat::concat;
 use toasty::Db;
 use toasty::Executor;
 use toasty::Result;
@@ -8,7 +9,9 @@ use tracing::error;
 use tracing::info;
 use tracing::instrument;
 
-const DATABASE_URL: &str = "sqlite:data.db";
+use crate::DATA_FOLDER;
+
+const DATABASE_URL: &str = concat!("sqlite:", DATA_FOLDER, "/serverz.db");
 
 #[instrument(level = "debug", err)]
 pub async fn try_connect() -> Result<Db> {

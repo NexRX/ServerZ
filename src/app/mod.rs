@@ -69,7 +69,7 @@ async fn root(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
 }
 
 #[page]
-async fn home(cx: &Cx) -> Result<impl View> {
+pub async fn home(cx: &Cx) -> Result<impl View> {
     Ok(view! { <main class="mx-auto max-w-2xl px-4 py-16">"hi"</main> })
 }
 

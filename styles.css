@@ -59,6 +59,42 @@
     var(--color-base-100);
 }
 
+.setup-success-circle {
+  animation: setup-success-circle 900ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.setup-success-ring {
+  animation: setup-success-ring 2.4s ease-out 300ms both;
+}
+
+
+@keyframes setup-success-circle {
+  0% {
+    opacity: 0;
+    transform: scale(0.45);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes setup-success-ring {
+  0% {
+    opacity: 0.45;
+    transform: scale(0.8);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.65);
+  }
+}
+
+
 .setup-grid {
   position: absolute;
   inset: 0;

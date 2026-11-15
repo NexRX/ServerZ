@@ -1,9 +1,7 @@
-use crate::{dayz::server::Server, db::Singleton};
+use crate::{DATA_FOLDER, dayz::server::Server, db::Singleton};
 use constcat::concat;
 use jiff::Timestamp;
 use toasty::{Executor, Model};
-
-pub const SERVERZ_DATA_FOLDER: &str = "/var/lib/serverz";
 
 // pub const DEFAULT_SERVER_QUERY_PORT: u16 = 27016;
 pub const DEFAULT_SERVER_PORT: u16 = 2302;
@@ -14,12 +12,21 @@ pub const DEFAULT_FREEZE_CHECK: bool = true;
 pub const DEFAULT_FILE_PATCHING: bool = true;
 pub const DEFAULT_LIMIT_FPS: u8 = 120;
 
-pub const DEFAULT_SERVER_PATH: &str = concat!(SERVERZ_DATA_FOLDER, "/server");
-pub const DEFAULT_SERVER_PROFILE_PATH: &str = concat!(DEFAULT_SERVER_PATH, "/profile");
-pub const DEFAULT_SERVER_CONFIG_PATH: &str = concat!(DEFAULT_SERVER_PATH, "/serverDZ.cfg");
+// these are relative to the server
+pub const DEFAULT_SERVER_PROFILE_RELATIVE_PATH: &str = "/profile";
+pub const DEFAULT_SERVER_CONFIG_RELATIVE_PATH: &str = "/serverDZ.cfg";
+pub const DEFAULT_SERVER_MISSION_RELATIVE_PATH: &str = "/mpmissions/dayzOffline.chernarusplus";
+pub const DEFAULT_SERVER_BATTLEYE_RELATIVE_PATH: &str = "/battleye";
+
+pub const DEFAULT_SERVER_PATH: &str = concat!(DATA_FOLDER, "/server");
+pub const DEFAULT_SERVER_PROFILE_PATH: &str =
+    concat!(DEFAULT_SERVER_PATH, DEFAULT_SERVER_PROFILE_RELATIVE_PATH);
+pub const DEFAULT_SERVER_CONFIG_PATH: &str =
+    concat!(DEFAULT_SERVER_PATH, DEFAULT_SERVER_CONFIG_RELATIVE_PATH);
 pub const DEFAULT_SERVER_MISSION_PATH: &str =
-    concat!(DEFAULT_SERVER_PATH, "/mpmissions/dayzOffline.chernarusplus");
-pub const DEFAULT_SERVER_BATTLEYE_PATH: &str = concat!(SERVERZ_DATA_FOLDER, "/battleye");
+    concat!(DEFAULT_SERVER_PATH, DEFAULT_SERVER_MISSION_RELATIVE_PATH);
+pub const DEFAULT_SERVER_BATTLEYE_PATH: &str =
+    concat!(DEFAULT_SERVER_PATH, DEFAULT_SERVER_BATTLEYE_RELATIVE_PATH);
 
 /// Modelled after [launch parameters](https://community.bistudio.com/wiki/DayZ:Server_Configuration#Launch_Parameters)
 #[derive(Debug, Model)]
@@ -40,16 +47,16 @@ pub struct LaunchParams {
     config_filepath: String,
     /// Defines the mission used by the server
     #[default(DEFAULT_SERVER_MISSION_PATH.to_string())]
-    mission: String,
+    mission_path: String,
+    /// Sets a custom path to the BattlEye files
+    #[default(DEFAULT_SERVER_BATTLEYE_PATH.to_string())]
+    battleye_path: String,
     /// Port to have dedicated server listen on
     #[default(DEFAULT_SERVER_PORT)]
     port: u16,
     /// Sets the number of logical CPU cores to use for parallel tasks processing. It should be less or equal than the numbers of available cores.
     #[default(default_cpus())]
     cpu_count: u8,
-    /// Sets a custom path to the BattlEye files
-    #[default(DEFAULT_SERVER_BATTLEYE_PATH.to_string())]
-    battleye_path: String,
     /// Enables all log messages in the server RPT file
     #[default(DEFAULT_DO_LOGS)]
     do_logs: bool,
@@ -58,7 +65,7 @@ pub struct LaunchParams {
     admin_logs: bool,
     /// Enables the network traffic logging
     #[default(DEFAULT_NET_LOGS)]
-    net_log: bool,
+    net_logs: bool,
     /// Stops the server when frozen for more than 5 min and create a dump file
     #[default(DEFAULT_FREEZE_CHECK)]
     freeze_check: bool,

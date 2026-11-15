@@ -1,4 +1,4 @@
-use crate::{dayz::server::Server, db::Singleton};
+use crate::{dayz::Server, db::Singleton};
 use topcoat::{
     context::Cx,
     router::error::{RedirectError, RouterErrorExt as _},

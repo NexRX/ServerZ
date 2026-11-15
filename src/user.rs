@@ -22,9 +22,10 @@ pub struct User {
 
 #[derive(Debug, Embed, Default)]
 pub enum Role {
+    Owner,
+    Member,
     #[default]
     Guest,
-    Owner,
 }
 
 #[memoize(as_ref)]
