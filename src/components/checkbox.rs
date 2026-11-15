@@ -48,18 +48,22 @@ pub async fn checkbox(
     cx: &Cx,
     #[default] color: CheckboxColor,
     #[default] size: CheckboxSize,
+    #[default] label: Option<String>,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
     Ok(view! {
-        <input
-            type="checkbox"
-            class=(class!(
-                "checkbox",
-                color.to_class(),
-                size.to_class(),
-                attrs.remove("class"),
-            ))
-            (attrs)
-        >
+        <label class="label">
+            <input
+                type="checkbox"
+                class=(class!(
+                    "checkbox",
+                    color.to_class(),
+                    size.to_class(),
+                    attrs.remove("class"),
+                ))
+                (attrs)
+            >
+            (label.unwrap_or_default())
+        </label>
     })
 }

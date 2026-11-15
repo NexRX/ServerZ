@@ -7,11 +7,16 @@ use topcoat::{
 #[component]
 pub async fn fieldset(
     cx: &Cx,
+    #[default] legend: Option<String>,
+    #[default] class: &'static str,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
     Ok(view! {
-        <fieldset class=(class!("fieldset", attrs.remove("class"))) (attrs)>
+        <fieldset class=(class!("fieldset", class, attrs.remove("class"))) (attrs)>
+            if let Some(legend) = legend {
+                fieldset_legend((legend))
+            }
             (child)
         </fieldset>
     })

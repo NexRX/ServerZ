@@ -61,14 +61,14 @@ pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
                 label: Some("Username".into()),
                 label_for: Some(CreateOwnerValidation::Username.name().into()),
                 inner_attrs: CreateOwnerValidation::Username.attrs(cx),
-                attrs: attributes!(type="submit" class="w-72")
+                attrs: attributes!(class="w-72")
             )
             input(
                 ty: InputType::Password,
                 label: Some("Password".into()),
                 label_for: Some(CreateOwnerValidation::Password.name().into()),
                 inner_attrs: CreateOwnerValidation::Password.attrs(cx),
-                attrs: attributes!(type="submit" class="w-72")
+                attrs: attributes!(class="w-72")
             )
             button(
                 attrs: attributes!(type="submit" class="mt-auto ml-auto self-end"),
