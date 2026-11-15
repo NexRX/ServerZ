@@ -280,6 +280,7 @@ pub async fn input(
             <label
                 class=(class!(
                     "input",
+                    "w-full",
                     color.to_class(),
                     size.to_class(),
                     variant.to_class(),

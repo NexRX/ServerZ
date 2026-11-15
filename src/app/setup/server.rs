@@ -69,43 +69,39 @@ pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
             action="/api/setup/create-server"
             class="flex flex-col flex-1 items-center h-full"
         >
-            input(
-                label: Some("Server Path".into()),
-                label_for: Some(ServerCreationValidation::ServerPath.name().into()),
-                inner_attrs: ServerCreationValidation::ServerPath.attrs(cx),
-                attrs: attributes!(class="w-72")
-            )
-            input(
-                label: Some("CPU Cores".into()),
-                label_for: Some(ServerCreationValidation::CpuCores.name().into()),
-                inner_attrs: ServerCreationValidation::CpuCores.attrs(cx),
-                attrs: attributes!(class="w-72")
-            )
-            input(
-                label: Some("Port".into()),
-                label_for: Some(ServerCreationValidation::Port.name().into()),
-                inner_attrs: ServerCreationValidation::Port.attrs(cx),
-                attrs: attributes!(class="w-72")
-            )
-            input(
-                label: Some("Server FPS Limit".into()),
-                label_for: Some(ServerCreationValidation::LimitFps.name().into()),
-                inner_attrs: ServerCreationValidation::LimitFps.attrs(cx),
-                attrs: attributes!(class="w-72")
-            )
-            input(
-                label: Some("Server FPS Limit".into()),
-                label_for: Some(ServerCreationValidation::LimitFps.name().into()),
-                inner_attrs: ServerCreationValidation::LimitFps.attrs(cx),
-                attrs: attributes!(class="w-72")
-            )
-            fieldset(
-                legend: Some("Logging Options".into()),
-                class: "border border-base-300 rounded-box p-4",
-                checkbox(label: Some("General (Do)".into()))
-                checkbox(label: Some("Admin".into()))
-                checkbox(label: Some("Network".into()))
-            )
+            <div class="flex flex-1 flex-wrap w-full gap-4 justify-evenly">
+                input(
+                    label: Some("Server Path".into()),
+                    label_for: Some(ServerCreationValidation::ServerPath.name().into()),
+                    inner_attrs: ServerCreationValidation::ServerPath.attrs(cx),
+                    attrs: attributes!(class="w-full")
+                )
+                input(
+                    label: Some("CPU Cores".into()),
+                    label_for: Some(ServerCreationValidation::CpuCores.name().into()),
+                    inner_attrs: ServerCreationValidation::CpuCores.attrs(cx),
+                    attrs: attributes!(class="w-40")
+                )
+                input(
+                    label: Some("Port".into()),
+                    label_for: Some(ServerCreationValidation::Port.name().into()),
+                    inner_attrs: ServerCreationValidation::Port.attrs(cx),
+                    attrs: attributes!(class="w-38")
+                )
+                input(
+                    label: Some("Server FPS Limit".into()),
+                    label_for: Some(ServerCreationValidation::LimitFps.name().into()),
+                    inner_attrs: ServerCreationValidation::LimitFps.attrs(cx),
+                    attrs: attributes!(class="w-38")
+                )
+                fieldset(
+                    legend: Some("Logging Options".into()),
+                    class: "border border-base-300 rounded-box p-4",
+                    checkbox(label: Some("General (Do)".into()))
+                    checkbox(label: Some("Admin".into()))
+                    checkbox(label: Some("Network".into()))
+                )
+            </div>
             button(
                 attrs: attributes!(type="submit" class="mt-auto ml-auto self-end"),
                 "Next"
