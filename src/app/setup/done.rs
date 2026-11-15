@@ -5,7 +5,6 @@ use crate::dayz::ensure_server_created;
 use crate::user::ensure_owner_created;
 use topcoat::router::error::RouterErrorExt as _;
 use topcoat::router::href;
-use topcoat::runtime::{PrefetchMode, link};
 use topcoat::view::attributes;
 use topcoat::{
     Result,
@@ -15,7 +14,7 @@ use topcoat::{
 };
 
 #[page]
-pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
+pub async fn setup_done(cx: &Cx) -> Result<impl View> {
     ensure_owner_created(cx)
         .await
         .ok_or_redirect(SetupStep::Owner.to_uri())?;
@@ -40,15 +39,13 @@ pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
                 </div>
             </div>
         </div>
-        link(
-            href: href!(crate::app::home),
-            prefetch: PrefetchMode::Viewport,
-            attrs: attributes!(class="mt-auto ml-auto self-end"),
+        <link rel="prefetch" href=(href!(crate::app::home))>
+        <a href=(href!(crate::app::home)) class="link mt-auto ml-auto self-end">
             button(
                 attrs: attributes!(type="button"),
                 "Continue to homepage"
                 <div class="iconify solar--arrow-right-bold-duotone" />
             )
-        )
+        </a>
     })
 }

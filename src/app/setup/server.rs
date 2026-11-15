@@ -85,7 +85,7 @@ async fn create_owner(cx: &Cx, Form(input): Form<ServerCreation>) -> Result<SeeO
 }
 
 #[page]
-pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
+pub async fn setup_server(cx: &Cx) -> Result<impl View> {
     ensure_server_not_created(cx)
         .await
         .ok_or_redirect(SetupStep::Done.to_uri())?;
