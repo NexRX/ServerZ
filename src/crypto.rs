@@ -1,11 +1,12 @@
-use std::fmt::Debug;
-
+use argon2::Argon2;
 use derive_more::{Deref, DerefMut, Display};
 use garde::Validate;
+use password_hash::{PasswordHasher, PasswordVerifier, phc::PasswordHash};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
+use std::fmt::Debug;
 
-#[derive(Clone, Validate, JsonSchema, Deref, DerefMut, Display, Serialize, Deserialize)]
+#[derive(Clone, Validate, JsonSchema, Deref, DerefMut, Display, Serialize, Deserialize, Hash)]
 #[repr(transparent)]
 pub struct Secret(#[garde(length(min = 3, max = 255))] pub String);
 
@@ -40,5 +41,25 @@ impl<'a> From<&'a Secret> for SecretRef<'a> {
 impl<'a> Debug for SecretRef<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "\"{}\"", "*".repeat(self.len()))
+    }
+}
+
+impl Secret {
+    pub fn hash(&self) -> Result<String, password_hash::Error> {
+        let hashed = Argon2::default()
+            .hash_password(self.0.as_bytes())?
+            .to_string();
+
+        Ok(hashed)
+    }
+
+    pub fn verify_hash(&self, encoded_hash: &str) -> bool {
+        let Ok(parsed_hash) = PasswordHash::new(encoded_hash) else {
+            return false;
+        };
+
+        Argon2::default()
+            .verify_password(self.0.as_bytes(), &parsed_hash)
+            .is_ok()
     }
 }

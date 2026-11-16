@@ -1,3 +1,7 @@
+mod session;
+
+pub use session::*;
+
 use anyhow::ensure;
 use jiff::Timestamp;
 use toasty::{Embed, Model, stmt::Uuid};
@@ -6,21 +10,25 @@ use tracing::instrument;
 
 use crate::db::db;
 
-#[derive(Debug, Model)]
+#[derive(Debug, Clone, Model)]
 pub struct User {
     #[key]
     #[auto]
-    id: Uuid,
-    username: String,
-    password_hash: String,
-    role: Role,
+    pub id: Uuid,
     #[auto]
-    created_at: Timestamp,
+    pub created_at: Timestamp,
     #[auto]
-    updated_at: Timestamp,
+    pub updated_at: Timestamp,
+
+    pub username: String,
+    pub password_hash: String,
+    pub role: Role,
+
+    #[has_many]
+    sessions: Vec<Session>,
 }
 
-#[derive(Debug, Embed, Default)]
+#[derive(Debug, Copy, Clone, Embed, Default)]
 pub enum Role {
     Owner,
     Member,

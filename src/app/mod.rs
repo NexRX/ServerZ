@@ -1,8 +1,12 @@
+pub mod api;
+pub mod login;
 pub mod setup;
 pub mod showcase;
 
+use crate::features::guards::require_login;
 use crate::features::{app_menu::app_menu, guards::require_server};
 use toasty::Db;
+use topcoat::cookie::CookieLayer;
 use topcoat::{
     Result,
     asset::{AssetBundle, RouterBuilderAssetExt},
@@ -16,6 +20,7 @@ use topcoat::{
     tailwind,
     view::{View, component, error_boundary, view},
 };
+use tracing::trace;
 
 topcoat::router::not_found!();
 
@@ -25,6 +30,7 @@ pub fn router(db: Db) -> Router {
         .with(db)
         .assets(AssetBundle::load().unwrap())
         .layer(RuntimeLayer::new())
+        .layer(CookieLayer::new())
         .build()
 }
 
@@ -35,8 +41,17 @@ async fn root(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
     let is_hide_menu = path.starts_with("/setup");
 
     let path = uri(cx).path();
-    if !path.starts_with("/setup") && !path.starts_with("/showcase") {
+
+    let is_require_setup = !path.starts_with("/setup") && !path.starts_with("/showcase");
+    if is_require_setup {
+        trace!("Requiring setup for {path}");
         require_server(cx).await?;
+    }
+
+    let is_require_login = !is_require_setup && !path.starts_with("/login");
+    if is_require_login {
+        trace!("Requiring login for {path}");
+        require_login(cx).await?;
     }
 
     Ok(view! {
