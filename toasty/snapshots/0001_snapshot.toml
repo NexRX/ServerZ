@@ -1,0 +1,315 @@
+version = 1
+
+[schema]
+
+[[schema.tables]]
+id = 0
+name = "mods"
+primary_key = { columns = [{ table = 0, index = 0 }], index = { table = 0, index = 0 } }
+
+[[schema.tables.columns]]
+id = { table = 0, index = 0 }
+name = "id"
+ty = "U64"
+storage_ty = { UnsignedInteger = 8 }
+
+[[schema.tables.columns]]
+id = { table = 0, index = 1 }
+name = "created_at"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 0, index = 2 }
+name = "updated_at"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 0, index = 3 }
+name = "server_only"
+ty = "Bool"
+storage_ty = "Boolean"
+
+[[schema.tables.columns]]
+id = { table = 0, index = 4 }
+name = "server_id"
+ty = "U8"
+storage_ty = { UnsignedInteger = 1 }
+
+[[schema.tables.indices]]
+id = { table = 0, index = 0 }
+name = "index_mods_by_id"
+on = 0
+columns = [{ column = { table = 0, index = 0 }, op = "Eq", scope = "Partition" }]
+unique = true
+primary_key = true
+
+[[schema.tables.indices]]
+id = { table = 0, index = 1 }
+name = "index_mods_by_server_id"
+on = 0
+columns = [{ column = { table = 0, index = 4 }, op = "Eq", scope = "Partition" }]
+
+[[schema.tables]]
+id = 1
+name = "servers"
+primary_key = { columns = [{ table = 1, index = 0 }], index = { table = 1, index = 0 } }
+
+[[schema.tables.columns]]
+id = { table = 1, index = 0 }
+name = "id"
+ty = "U8"
+storage_ty = { UnsignedInteger = 1 }
+
+[[schema.tables.columns]]
+id = { table = 1, index = 1 }
+name = "created_at"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 1, index = 2 }
+name = "updated_at"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.indices]]
+id = { table = 1, index = 0 }
+name = "index_servers_by_id"
+on = 1
+columns = [{ column = { table = 1, index = 0 }, op = "Eq", scope = "Partition" }]
+unique = true
+primary_key = true
+
+[[schema.tables]]
+id = 2
+name = "launch_params"
+primary_key = { columns = [{ table = 2, index = 0 }], index = { table = 2, index = 0 } }
+
+[[schema.tables.columns]]
+id = { table = 2, index = 0 }
+name = "id"
+ty = "U8"
+storage_ty = { UnsignedInteger = 1 }
+
+[[schema.tables.columns]]
+id = { table = 2, index = 1 }
+name = "created_at"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 2, index = 2 }
+name = "updated_at"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 2, index = 3 }
+name = "profile_path"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 2, index = 4 }
+name = "config_filepath"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 2, index = 5 }
+name = "mission_path"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 2, index = 6 }
+name = "battleye_path"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 2, index = 7 }
+name = "port"
+ty = "U16"
+storage_ty = { UnsignedInteger = 2 }
+
+[[schema.tables.columns]]
+id = { table = 2, index = 8 }
+name = "cpu_count"
+ty = "U8"
+storage_ty = { UnsignedInteger = 1 }
+
+[[schema.tables.columns]]
+id = { table = 2, index = 9 }
+name = "do_logs"
+ty = "Bool"
+storage_ty = "Boolean"
+
+[[schema.tables.columns]]
+id = { table = 2, index = 10 }
+name = "admin_logs"
+ty = "Bool"
+storage_ty = "Boolean"
+
+[[schema.tables.columns]]
+id = { table = 2, index = 11 }
+name = "net_logs"
+ty = "Bool"
+storage_ty = "Boolean"
+
+[[schema.tables.columns]]
+id = { table = 2, index = 12 }
+name = "freeze_check"
+ty = "Bool"
+storage_ty = "Boolean"
+
+[[schema.tables.columns]]
+id = { table = 2, index = 13 }
+name = "file_patching"
+ty = "Bool"
+storage_ty = "Boolean"
+
+[[schema.tables.columns]]
+id = { table = 2, index = 14 }
+name = "limit_fps"
+ty = "U8"
+storage_ty = { UnsignedInteger = 1 }
+
+[[schema.tables.columns]]
+id = { table = 2, index = 15 }
+name = "storage_path"
+ty = "String"
+storage_ty = "Text"
+nullable = true
+
+[[schema.tables.columns]]
+id = { table = 2, index = 16 }
+name = "server_id"
+ty = "U8"
+storage_ty = { UnsignedInteger = 1 }
+
+[[schema.tables.indices]]
+id = { table = 2, index = 0 }
+name = "index_launch_params_by_id"
+on = 2
+columns = [{ column = { table = 2, index = 0 }, op = "Eq", scope = "Partition" }]
+unique = true
+primary_key = true
+
+[[schema.tables.indices]]
+id = { table = 2, index = 1 }
+name = "index_launch_params_by_server_id"
+on = 2
+columns = [{ column = { table = 2, index = 16 }, op = "Eq", scope = "Partition" }]
+
+[[schema.tables]]
+id = 3
+name = "sessions"
+primary_key = { columns = [{ table = 3, index = 0 }], index = { table = 3, index = 0 } }
+
+[[schema.tables.columns]]
+id = { table = 3, index = 0 }
+name = "id"
+ty = "Bytes"
+storage_ty = "Blob"
+
+[[schema.tables.columns]]
+id = { table = 3, index = 1 }
+name = "created_at"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 3, index = 2 }
+name = "updated_at"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 3, index = 3 }
+name = "token_hash"
+ty = "Bytes"
+storage_ty = "Blob"
+
+[[schema.tables.columns]]
+id = { table = 3, index = 4 }
+name = "expires_at"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 3, index = 5 }
+name = "user_id"
+ty = "Bytes"
+storage_ty = "Blob"
+
+[[schema.tables.indices]]
+id = { table = 3, index = 0 }
+name = "index_sessions_by_id"
+on = 3
+columns = [{ column = { table = 3, index = 0 }, op = "Eq", scope = "Partition" }]
+unique = true
+primary_key = true
+
+[[schema.tables.indices]]
+id = { table = 3, index = 1 }
+name = "index_sessions_by_token_hash"
+on = 3
+columns = [{ column = { table = 3, index = 3 }, op = "Eq", scope = "Partition" }]
+
+[[schema.tables.indices]]
+id = { table = 3, index = 2 }
+name = "index_sessions_by_user_id"
+on = 3
+columns = [{ column = { table = 3, index = 5 }, op = "Eq", scope = "Partition" }]
+
+[[schema.tables]]
+id = 4
+name = "users"
+primary_key = { columns = [{ table = 4, index = 0 }], index = { table = 4, index = 0 } }
+
+[[schema.tables.columns]]
+id = { table = 4, index = 0 }
+name = "id"
+ty = "Bytes"
+storage_ty = "Blob"
+
+[[schema.tables.columns]]
+id = { table = 4, index = 1 }
+name = "created_at"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 4, index = 2 }
+name = "updated_at"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 4, index = 3 }
+name = "username"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 4, index = 4 }
+name = "password_hash"
+ty = "String"
+storage_ty = "Text"
+
+[[schema.tables.columns]]
+id = { table = 4, index = 5 }
+name = "role"
+ty = "String"
+storage_ty = { Enum = { name = "role", variants = [{ name = "owner" }, { name = "member" }, { name = "guest" }] } }
+
+[[schema.tables.indices]]
+id = { table = 4, index = 0 }
+name = "index_users_by_id"
+on = 4
+columns = [{ column = { table = 4, index = 0 }, op = "Eq", scope = "Partition" }]
+unique = true
+primary_key = true
