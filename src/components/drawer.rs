@@ -22,11 +22,7 @@ pub async fn drawer(
 }
 
 #[component]
-pub async fn drawer_toggle(
-    cx: &Cx,
-    id: String,
-    #[default] mut attrs: Attributes,
-) -> Result<impl View> {
+pub async fn drawer_toggle(cx: &Cx, id: String, #[default] mut attrs: Attributes) -> Result<impl View> {
     Ok(view! {
         <input
             id=(id)
@@ -51,21 +47,13 @@ pub async fn drawer_content(
     })
 }
 #[component]
-pub async fn drawer_side(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn drawer_side(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! {
         <div class=(class!("drawer-side", attrs.remove("class"))) (attrs)>(child)</div>
     })
 }
 #[component]
-pub async fn drawer_overlay(
-    cx: &Cx,
-    for_id: String,
-    #[default] mut attrs: Attributes,
-) -> Result<impl View> {
+pub async fn drawer_overlay(cx: &Cx, for_id: String, #[default] mut attrs: Attributes) -> Result<impl View> {
     Ok(view! {
         <label
             for=(for_id)

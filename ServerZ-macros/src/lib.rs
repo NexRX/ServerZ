@@ -50,11 +50,7 @@ pub fn derive_tailwind_class(input: TokenStream) -> TokenStream {
                 .filter_map(|attr| {
                     if attr.path().is_ident("class") {
                         if let Meta::NameValue(meta) = &attr.meta {
-                            if let Expr::Lit(ExprLit {
-                                lit: Lit::Str(lit_str),
-                                ..
-                            }) = &meta.value
-                            {
+                            if let Expr::Lit(ExprLit { lit: Lit::Str(lit_str), .. }) = &meta.value {
                                 return Some(lit_str.value());
                             }
                         }
@@ -64,10 +60,7 @@ pub fn derive_tailwind_class(input: TokenStream) -> TokenStream {
                 .next();
 
             class_value.unwrap_or_else(|| {
-                panic!(
-                    "Variant `{}::{}` is missing `#[class = \"...\"]` attribute",
-                    name, variant.ident
-                )
+                panic!("Variant `{}::{}` is missing `#[class = \"...\"]` attribute", name, variant.ident)
             })
         })
         .collect();
@@ -75,15 +68,12 @@ pub fn derive_tailwind_class(input: TokenStream) -> TokenStream {
     let variant_ids: Vec<_> = variants.iter().map(|v| &v.ident).collect();
 
     // Build match arms with literal class strings
-    let match_arms = variant_ids
-        .iter()
-        .zip(class_strings.iter())
-        .map(|(variant, class)| {
-            let class_lit = LitStr::new(class, Span::call_site());
-            quote! {
-                Self::#variant => #class_lit,
-            }
-        });
+    let match_arms = variant_ids.iter().zip(class_strings.iter()).map(|(variant, class)| {
+        let class_lit = LitStr::new(class, Span::call_site());
+        quote! {
+            Self::#variant => #class_lit,
+        }
+    });
 
     let expanded = quote! {
         impl #name {
@@ -157,26 +147,17 @@ fn expand_form_validation(input: &DeriveInput) -> syn::Result<proc_macro2::Token
     use syn::ext::IdentExt;
 
     if !input.generics.params.is_empty() {
-        return Err(syn::Error::new_spanned(
-            &input.generics,
-            "`FormValidation` does not support generic structs",
-        ));
+        return Err(syn::Error::new_spanned(&input.generics, "`FormValidation` does not support generic structs"));
     }
     let fields = match &input.data {
         Data::Struct(data) => match &data.fields {
             syn::Fields::Named(named) => &named.named,
             _ => {
-                return Err(syn::Error::new_spanned(
-                    input,
-                    "`FormValidation` requires a struct with named fields",
-                ));
+                return Err(syn::Error::new_spanned(input, "`FormValidation` requires a struct with named fields"));
             }
         },
         _ => {
-            return Err(syn::Error::new_spanned(
-                input,
-                "`FormValidation` can only be derived for structs",
-            ));
+            return Err(syn::Error::new_spanned(input, "`FormValidation` can only be derived for structs"));
         }
     };
 
@@ -192,8 +173,8 @@ fn expand_form_validation(input: &DeriveInput) -> syn::Result<proc_macro2::Token
         let ident = field.ident.as_ref().expect("named field");
         let mut property = ident.unraw().to_string();
         let mut skip = false;
-        let form_options = FormFieldOptions::from_field(field)
-            .map_err(|error| syn::Error::new_spanned(field, error.to_string()))?;
+        let form_options =
+            FormFieldOptions::from_field(field).map_err(|error| syn::Error::new_spanned(field, error.to_string()))?;
         let value = form_options.value;
         for attr in &field.attrs {
             if attr.path().is_ident("serde") || attr.path().is_ident("schemars") {
@@ -224,11 +205,8 @@ fn expand_form_validation(input: &DeriveInput) -> syn::Result<proc_macro2::Token
         values.push(value);
     }
 
-    let value_arms = variants
-        .iter()
-        .zip(values.iter())
-        .zip(boolean_fields.iter())
-        .map(|((variant, value), is_boolean)| {
+    let value_arms =
+        variants.iter().zip(values.iter()).zip(boolean_fields.iter()).map(|((variant, value), is_boolean)| {
             if let Some(value) = value {
                 if *is_boolean {
                     quote! {
@@ -345,10 +323,7 @@ fn is_bool_type(ty: &syn::Type) -> bool {
     let syn::Type::Path(path) = ty else {
         return false;
     };
-    path.path
-        .segments
-        .last()
-        .is_some_and(|segment| segment.ident == "bool")
+    path.path.segments.last().is_some_and(|segment| segment.ident == "bool")
 }
 
 fn to_pascal_case(s: &str) -> String {
@@ -356,10 +331,7 @@ fn to_pascal_case(s: &str) -> String {
         .filter(|part| !part.is_empty())
         .map(|part| {
             let mut chars = part.chars();
-            chars
-                .next()
-                .map(|c| c.to_uppercase().chain(chars).collect::<String>())
-                .unwrap_or_default()
+            chars.next().map(|c| c.to_uppercase().chain(chars).collect::<String>()).unwrap_or_default()
         })
         .collect()
 }

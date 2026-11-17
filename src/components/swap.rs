@@ -24,21 +24,13 @@ pub async fn swap(
     })
 }
 #[component]
-pub async fn swap_on(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn swap_on(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! {
         <span class=(class!("swap-on", attrs.remove("class"))) (attrs)>(child)</span>
     })
 }
 #[component]
-pub async fn swap_off(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn swap_off(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! {
         <span class=(class!("swap-off", attrs.remove("class"))) (attrs)>(child)</span>
     })

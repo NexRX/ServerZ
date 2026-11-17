@@ -110,9 +110,7 @@ fn attr_present(attrs: &Attributes, key: &str) -> bool {
 /// Mirrors the browser check `/^[^\s@]+@[^\s@]+$/`.
 fn looks_like_email(value: &str) -> bool {
     let ok = |part: &str| !part.is_empty() && !part.contains(char::is_whitespace);
-    value
-        .split_once('@')
-        .is_some_and(|(local, domain)| ok(local) && ok(domain) && !domain.contains('@'))
+    value.split_once('@').is_some_and(|(local, domain)| ok(local) && ok(domain) && !domain.contains('@'))
 }
 
 /// Mirrors the browser check `/^[a-z][a-z0-9+.-]*:\/\/\S+$/i`.
@@ -179,8 +177,8 @@ pub async fn input(
     let min = attr_str(&inner_attrs, "min").and_then(|v| v.parse::<f64>().ok());
     let max = attr_str(&inner_attrs, "max").and_then(|v| v.parse::<f64>().ok());
     let pattern = attr_str(&inner_attrs, "pattern");
-    let pattern_message = attr_str(&inner_attrs, "title")
-        .unwrap_or_else(|| "Must match the requested format.".to_owned());
+    let pattern_message =
+        attr_str(&inner_attrs, "title").unwrap_or_else(|| "Must match the requested format.".to_owned());
     let is_email = ty == InputType::Email;
     let is_url = ty == InputType::Url;
     let initial = attr_str(&inner_attrs, "value").unwrap_or_default();
@@ -207,17 +205,11 @@ pub async fn input(
     });
     let email_ok = expr!({
         let v = value.get();
-        raw!(
-            "cx.hydrate(/^[^\\s@]+@[^\\s@]+$/.test(String(${v})))",
-            looks_like_email(&v)
-        )
+        raw!("cx.hydrate(/^[^\\s@]+@[^\\s@]+$/.test(String(${v})))", looks_like_email(&v))
     });
     let url_ok = expr!({
         let v = value.get();
-        raw!(
-            "cx.hydrate(/^[a-z][a-z0-9+.-]*:\\/\\/\\S+$/i.test(String(${v})))",
-            looks_like_url(&v)
-        )
+        raw!("cx.hydrate(/^[a-z][a-z0-9+.-]*:\\/\\/\\S+$/i.test(String(${v})))", looks_like_url(&v))
     });
     // The pattern is only evaluated in the browser; the server render treats it as satisfied.
     let pattern_ok = {
@@ -411,27 +403,17 @@ mod tests {
 
     async fn render_without_tooltip(inner: Attributes) -> String {
         let cx = &Cx::new();
-        view! { input(inner_attrs: inner, rules_tooltip: false) }
-            .single()
-            .await
-            .unwrap()
-            .render(cx)
+        view! { input(inner_attrs: inner, rules_tooltip: false) }.single().await.unwrap().render(cx)
     }
 
     async fn render(ty: InputType, inner: Attributes, errors: Vec<String>) -> String {
         let cx = &Cx::new();
-        view! { input(ty: ty, inner_attrs: inner, validation_errors: errors) }
-            .single()
-            .await
-            .unwrap()
-            .render(cx)
+        view! { input(ty: ty, inner_attrs: inner, validation_errors: errors) }.single().await.unwrap().render(cx)
     }
 
     /// Returns the opening `<p ...>` tag that precedes `message`.
     fn tag_for<'a>(html: &'a str, message: &str) -> &'a str {
-        let end = html
-            .find(message)
-            .unwrap_or_else(|| panic!("`{message}` not rendered in {html}"));
+        let end = html.find(message).unwrap_or_else(|| panic!("`{message}` not rendered in {html}"));
         let start = html[..end].rfind("<p").unwrap();
         &html[start..end]
     }
@@ -484,12 +466,7 @@ mod tests {
         assert!(!is_hidden(&empty, msg));
         assert!(empty.contains("data-topcoat-bind:hidden"));
 
-        let filled = render(
-            InputType::Text,
-            attrs(&[("required", ""), ("value", "x")]),
-            vec![],
-        )
-        .await;
+        let filled = render(InputType::Text, attrs(&[("required", ""), ("value", "x")]), vec![]).await;
         assert!(is_hidden(&filled, msg));
     }
 
@@ -497,27 +474,18 @@ mod tests {
     async fn minlength_rule() {
         let msg = "Must be at least 3 characters.";
         let short = attrs(&[("minlength", "3"), ("value", "ab")]);
-        assert!(!is_hidden(
-            &render(InputType::Text, short, vec![]).await,
-            msg
-        ));
+        assert!(!is_hidden(&render(InputType::Text, short, vec![]).await, msg));
         let ok = attrs(&[("minlength", "3"), ("value", "abc")]);
         assert!(is_hidden(&render(InputType::Text, ok, vec![]).await, msg));
         let empty = attrs(&[("minlength", "3")]);
-        assert!(is_hidden(
-            &render(InputType::Text, empty, vec![]).await,
-            msg
-        ));
+        assert!(is_hidden(&render(InputType::Text, empty, vec![]).await, msg));
     }
 
     #[tokio::test]
     async fn maxlength_rule() {
         let msg = "Must be at most 3 characters.";
         let long = attrs(&[("maxlength", "3"), ("value", "abcd")]);
-        assert!(!is_hidden(
-            &render(InputType::Text, long, vec![]).await,
-            msg
-        ));
+        assert!(!is_hidden(&render(InputType::Text, long, vec![]).await, msg));
         let ok = attrs(&[("maxlength", "3"), ("value", "abc")]);
         assert!(is_hidden(&render(InputType::Text, ok, vec![]).await, msg));
     }
@@ -558,17 +526,11 @@ mod tests {
     async fn email_rule() {
         let msg = "Enter a valid email address.";
         let bad = attrs(&[("value", "nope")]);
-        assert!(!is_hidden(
-            &render(InputType::Email, bad, vec![]).await,
-            msg
-        ));
+        assert!(!is_hidden(&render(InputType::Email, bad, vec![]).await, msg));
         let ok = attrs(&[("value", "a@b.co")]);
         assert!(is_hidden(&render(InputType::Email, ok, vec![]).await, msg));
         let empty = Attributes::new();
-        assert!(is_hidden(
-            &render(InputType::Email, empty, vec![]).await,
-            msg
-        ));
+        assert!(is_hidden(&render(InputType::Email, empty, vec![]).await, msg));
     }
 
     #[tokio::test]
@@ -595,12 +557,7 @@ mod tests {
 
     #[tokio::test]
     async fn multiple_rules_can_fail_together() {
-        let a = attrs(&[
-            ("required", ""),
-            ("minlength", "5"),
-            ("pattern", "[0-9]+"),
-            ("value", "ab"),
-        ]);
+        let a = attrs(&[("required", ""), ("minlength", "5"), ("pattern", "[0-9]+"), ("value", "ab")]);
         let html = render(InputType::Text, a, vec![]).await;
         assert!(is_hidden(&html, "This field is required."));
         assert!(!is_hidden(&html, "Must be at least 5 characters."));
@@ -608,12 +565,7 @@ mod tests {
 
     #[tokio::test]
     async fn server_errors_render_without_rules() {
-        let html = render(
-            InputType::Text,
-            Attributes::new(),
-            vec!["Username taken".into()],
-        )
-        .await;
+        let html = render(InputType::Text, Attributes::new(), vec!["Username taken".into()]).await;
         assert!(html.contains("Username taken"));
         assert!(html.contains("input-error"));
         assert!(html.contains("validator"));
@@ -643,12 +595,7 @@ mod tests {
         ]);
         let html = render(InputType::Text, a, vec![]).await;
         let tip = &html[html.find("tooltip-content").expect("tooltip")..];
-        for rule in [
-            "Required",
-            "At least 3 characters",
-            "At most 30 characters",
-            "Letters only",
-        ] {
+        for rule in ["Required", "At least 3 characters", "At most 30 characters", "Letters only"] {
             assert!(tip.contains(rule), "{rule} missing in {html}");
         }
     }

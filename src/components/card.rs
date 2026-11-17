@@ -93,22 +93,14 @@ pub async fn card(
 }
 
 #[component]
-pub async fn card_header(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn card_header(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! {
         <div class=(class!("card-title", attrs.remove("class"))) (attrs)>(child)</div>
     })
 }
 
 #[component]
-pub async fn card_title(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn card_title(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! { <h2 class=(class!(attrs.remove("class"))) (attrs)>(child)</h2> })
 }
 
@@ -126,22 +118,14 @@ pub async fn card_description(
 }
 
 #[component]
-pub async fn card_content(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn card_content(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! {
         <div class=(class!("card-body", attrs.remove("class"))) (attrs)>(child)</div>
     })
 }
 
 #[component]
-pub async fn card_footer(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn card_footer(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! {
         <div class=(class!("card-actions", attrs.remove("class"))) (attrs)>(child)</div>
     })

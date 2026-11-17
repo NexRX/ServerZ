@@ -26,26 +26,16 @@ pub struct Session {
 }
 
 impl Session {
-    pub async fn persist(
-        cx: &Cx,
-        user: &User,
-        session: topcoat::session::Session,
-    ) -> topcoat::Result<()> {
+    pub async fn persist(cx: &Cx, user: &User, session: topcoat::session::Session) -> topcoat::Result<()> {
         let expires_at = session
             .expires_at
             .duration_since(UNIX_EPOCH)
             .map(|v| Timestamp::from_second(v.as_secs() as i64))
-            .map_err(|err| {
-                anyhow!("Failed to convert session expiry to unix timestamp: {err:?}")
-            })??;
+            .map_err(|err| anyhow!("Failed to convert session expiry to unix timestamp: {err:?}"))??;
 
-        toasty::create!(Session {
-            token_hash: session.token_hash.to_vec(),
-            expires_at,
-            user
-        })
-        .exec(&mut db(cx))
-        .await?;
+        toasty::create!(Session { token_hash: session.token_hash.to_vec(), expires_at, user })
+            .exec(&mut db(cx))
+            .await?;
         Ok(())
     }
 

@@ -15,10 +15,7 @@ const DATABASE_URL: &str = concat!("sqlite:", DATA_FOLDER, "/serverz.db");
 
 #[instrument(level = "debug", err)]
 pub async fn try_connect() -> Result<Db> {
-    Db::builder()
-        .models(toasty::models!(crate::*))
-        .connect(DATABASE_URL)
-        .await
+    Db::builder().models(toasty::models!(crate::*)).connect(DATABASE_URL).await
 }
 
 pub async fn connect_or_exit() -> Db {
@@ -43,10 +40,7 @@ pub async fn handle_cli_migration() {
     let is_handling = args.peek().is_some_and(|arg| arg == "toasty");
     if is_handling {
         info!("CLI: Running migrations");
-        match toasty_cli::ToastyCli::new(connect_or_exit().await)
-            .parse_from(args)
-            .await
-        {
+        match toasty_cli::ToastyCli::new(connect_or_exit().await).parse_from(args).await {
             Ok(_) => {
                 info!("Migrations ran successfully, exiting...");
                 std::process::exit(0);

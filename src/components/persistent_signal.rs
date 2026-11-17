@@ -47,10 +47,7 @@ pub struct PersistentSignal<T> {
 
 impl<T> Clone for PersistentSignal<T> {
     fn clone(&self) -> Self {
-        Self {
-            signal: self.signal.clone(),
-            key: self.key,
-        }
+        Self { signal: self.signal.clone(), key: self.key }
     }
 }
 
@@ -84,10 +81,7 @@ impl<T> Surrogate for PersistentSignalSurrogate<T> {
     type Real = PersistentSignal<T>;
 
     fn into_real(self) -> Self::Real {
-        PersistentSignal {
-            signal: self.signal.into_real(),
-            key: self.key,
-        }
+        PersistentSignal { signal: self.signal.into_real(), key: self.key }
     }
 }
 
@@ -95,10 +89,7 @@ impl<T> Surrogated for PersistentSignal<T> {
     type Surrogate = PersistentSignalSurrogate<T>;
 
     fn into_surrogate(self) -> Self::Surrogate {
-        PersistentSignalSurrogate {
-            signal: self.signal.into_surrogate(),
-            key: self.key,
-        }
+        PersistentSignalSurrogate { signal: self.signal.into_surrogate(), key: self.key }
     }
 }
 
@@ -148,19 +139,12 @@ where
 /// Panics if `key` is empty or contains anything other than ASCII letters, digits,
 /// `-` or `_`, since it is used verbatim as a cookie name.
 #[track_caller]
-pub fn persistent_signal<T>(
-    cx: &Cx,
-    key: &'static str,
-    init: impl FnOnce() -> T,
-) -> PersistentSignal<T>
+pub fn persistent_signal<T>(cx: &Cx, key: &'static str, init: impl FnOnce() -> T) -> PersistentSignal<T>
 where
     T: SignalValue,
 {
     assert!(
-        !key.is_empty()
-            && key
-                .bytes()
-                .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_'),
+        !key.is_empty() && key.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_'),
         "persistent signal key `{key}` must only contain ASCII letters, digits, `-` and `_`"
     );
 
@@ -168,10 +152,7 @@ where
         .and_then(|raw| serde_json::from_str::<serde_json::Value>(&raw).ok())
         .and_then(|value| T::from_value(&value));
 
-    PersistentSignal {
-        signal: signal(cx, || stored.unwrap_or_else(init)),
-        key,
-    }
+    PersistentSignal { signal: signal(cx, || stored.unwrap_or_else(init)), key }
 }
 
 impl<T> PersistentSignal<T> {

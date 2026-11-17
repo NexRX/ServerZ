@@ -12,16 +12,8 @@ pub async fn collapse(
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    let modifier = if plus {
-        "collapse-plus"
-    } else {
-        "collapse-arrow"
-    };
-    let state = if open {
-        "collapse-open"
-    } else {
-        "collapse-close"
-    };
+    let modifier = if plus { "collapse-plus" } else { "collapse-arrow" };
+    let state = if open { "collapse-open" } else { "collapse-close" };
     Ok(view! {
         <details
             class=(class!("collapse", modifier, state, attrs.remove("class")))

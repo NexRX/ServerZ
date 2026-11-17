@@ -5,11 +5,7 @@ use topcoat::{
 };
 
 #[component]
-pub async fn dropdown(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn dropdown(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! {
         <details class=(class!("dropdown", attrs.remove("class"))) (attrs)>
             (child)

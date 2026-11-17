@@ -12,10 +12,7 @@ use topcoat::{
     asset::{AssetBundle, RouterBuilderAssetExt},
     context::Cx,
     font::{Font, fontsource::fontsource_font},
-    router::{
-        Router, RouterBuilderDiscoverExt, Slot, error::NotFoundError, layout, module_router, page,
-        request::uri,
-    },
+    router::{Router, RouterBuilderDiscoverExt, Slot, error::NotFoundError, layout, module_router, page, request::uri},
     runtime::RuntimeLayer,
     tailwind,
     view::{View, component, error_boundary, view},
@@ -42,13 +39,13 @@ async fn root(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
 
     let path = uri(cx).path();
 
-    let is_require_setup = !path.starts_with("/setup") && !path.starts_with("/showcase");
+    let is_require_setup = !(path.starts_with("/setup") || path.starts_with("/showcase"));
     if is_require_setup {
         trace!("Requiring setup for {path}");
         require_server(cx).await?;
     }
 
-    let is_require_login = !is_require_setup && !path.starts_with("/login");
+    let is_require_login = !(is_require_setup || path.starts_with("/login"));
     if is_require_login {
         trace!("Requiring login for {path}");
         require_login(cx).await?;

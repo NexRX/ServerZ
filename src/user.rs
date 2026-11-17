@@ -39,11 +39,8 @@ pub enum Role {
 #[memoize(as_ref)]
 #[instrument(level = "debug", skip_all, ret)]
 pub async fn ensure_owner_created(cx: &Cx) -> anyhow::Result<()> {
-    let is_created = User::filter(User::fields().role().eq(Role::Owner))
-        .count()
-        .exec(&mut db(cx))
-        .await
-        .map(|count| count > 0)?;
+    let is_created =
+        User::filter(User::fields().role().eq(Role::Owner)).count().exec(&mut db(cx)).await.map(|count| count > 0)?;
     ensure!(is_created, "No user is created");
 
     Ok(())
@@ -52,11 +49,8 @@ pub async fn ensure_owner_created(cx: &Cx) -> anyhow::Result<()> {
 #[memoize(as_ref)]
 #[instrument(level = "debug", skip_all, ret)]
 pub async fn ensure_owner_not_created(cx: &Cx) -> anyhow::Result<()> {
-    let is_not_created = User::filter(User::fields().role().eq(Role::Owner))
-        .count()
-        .exec(&mut db(cx))
-        .await
-        .map(|count| count == 0)?;
+    let is_not_created =
+        User::filter(User::fields().role().eq(Role::Owner)).count().exec(&mut db(cx)).await.map(|count| count == 0)?;
     ensure!(is_not_created, "User is already created");
 
     Ok(())

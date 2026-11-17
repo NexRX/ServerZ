@@ -15,12 +15,8 @@ use topcoat::{
 
 #[page]
 pub async fn setup_done(cx: &Cx) -> Result<impl View> {
-    ensure_owner_created(cx)
-        .await
-        .ok_or_redirect(SetupStep::Owner.to_uri())?;
-    ensure_server_created(cx)
-        .await
-        .ok_or_redirect(SetupStep::Server.to_uri())?;
+    ensure_owner_created(cx).await.ok_or_redirect(SetupStep::Owner.to_uri())?;
+    ensure_server_created(cx).await.ok_or_redirect(SetupStep::Server.to_uri())?;
 
     Ok(view! {
         <div class="flex flex-1 items-center justify-center">

@@ -51,11 +51,7 @@ pub async fn dock_item(
 }
 
 #[component]
-pub async fn dock_label(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn dock_label(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! {
         <div class=(class!("dock-label", attrs.remove("class"))) (attrs)>(child)</div>
     })

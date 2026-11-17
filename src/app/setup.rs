@@ -1,6 +1,7 @@
 mod done;
 mod owner;
 mod server;
+mod steam;
 
 use crate::{components::prelude::*, dayz::ensure_server_created, user::ensure_owner_created};
 use constcat::concat;

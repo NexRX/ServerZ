@@ -31,9 +31,7 @@ pub struct Login {
 
 #[route(POST "/api/auth/login")]
 async fn login(cx: &Cx, Form(input): Form<Login>) -> Result<SeeOther> {
-    let user = verify_login(cx, &input)
-        .await?
-        .ok_or(anyhow!("Login not valid"))?;
+    let user = verify_login(cx, &input).await?.ok_or(anyhow!("Login not valid"))?;
 
     Session::persist(cx, &user, session::start(cx).await?).await?;
 
@@ -49,10 +47,7 @@ async fn logout(cx: &Cx) -> Result<SeeOther> {
 }
 
 async fn verify_login(cx: &Cx, input: &Login) -> Result<Option<User>> {
-    let Some(user) = User::filter(User::fields().username().eq(&input.username))
-        .first()
-        .exec(&mut db(cx))
-        .await?
+    let Some(user) = User::filter(User::fields().username().eq(&input.username)).first().exec(&mut db(cx)).await?
     else {
         return Ok(None);
     };
@@ -74,12 +69,7 @@ pub async fn me(cx: &Cx) -> Result<Option<User>> {
         return Ok(None);
     };
 
-    session
-        .user()
-        .exec(&mut db(cx))
-        .await
-        .map(Option::Some)
-        .map_err(Into::into)
+    session.user().exec(&mut db(cx)).await.map(Option::Some).map_err(Into::into)
 }
 
 /// Returns the current user

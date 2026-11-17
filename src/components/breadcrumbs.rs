@@ -5,11 +5,7 @@ use topcoat::{
 };
 
 #[component]
-pub async fn breadcrumbs(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn breadcrumbs(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! {
         <nav
             aria-label="Breadcrumb"

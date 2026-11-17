@@ -7,6 +7,7 @@ mod dayz;
 mod db;
 mod error;
 mod features;
+mod steam;
 mod user;
 
 use tracing::info;

@@ -5,11 +5,7 @@ use topcoat::{
 };
 
 #[component]
-pub async fn theme_controller(
-    cx: &Cx,
-    value: String,
-    #[default] mut attrs: Attributes,
-) -> Result<impl View> {
+pub async fn theme_controller(cx: &Cx, value: String, #[default] mut attrs: Attributes) -> Result<impl View> {
     Ok(view! {
         <input
             type="checkbox"

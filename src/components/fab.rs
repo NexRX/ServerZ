@@ -63,11 +63,7 @@ pub async fn fab_main_action(
     })
 }
 #[component]
-pub async fn fab_close(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn fab_close(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! {
         <div class=(class!("fab-close", attrs.remove("class"))) (attrs)>(child)</div>
     })

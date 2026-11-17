@@ -5,19 +5,11 @@ use topcoat::{
 };
 
 #[component]
-pub async fn list(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn list(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! { <ul class=(class!("list", attrs.remove("class"))) (attrs)>(child)</ul> })
 }
 #[component]
-pub async fn list_row(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn list_row(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! {
         <li class=(class!("list-row", attrs.remove("class"))) (attrs)>(child)</li>
     })

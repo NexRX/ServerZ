@@ -33,42 +33,26 @@ pub async fn stats(
 }
 
 #[component]
-pub async fn stat(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn stat(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! { <div class=(class!("stat", attrs.remove("class"))) (attrs)>(child)</div> })
 }
 
 #[component]
-pub async fn stat_title(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn stat_title(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! {
         <div class=(class!("stat-desc", attrs.remove("class"))) (attrs)>(child)</div>
     })
 }
 
 #[component]
-pub async fn stat_value(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn stat_value(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! {
         <div class=(class!("stat-value", attrs.remove("class"))) (attrs)>(child)</div>
     })
 }
 
 #[component]
-pub async fn stat_desc(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn stat_desc(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! {
         <div class=(class!("stat-desc", attrs.remove("class"))) (attrs)>(child)</div>
     })

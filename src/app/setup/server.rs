@@ -2,10 +2,9 @@ use super::SetupStep;
 use crate::components::prelude::*;
 use crate::dayz::Server;
 use crate::dayz::{
-    DEFAULT_ADMIN_LOGS, DEFAULT_DO_LOGS, DEFAULT_LIMIT_FPS, DEFAULT_NET_LOGS,
-    DEFAULT_SERVER_BATTLEYE_RELATIVE_PATH, DEFAULT_SERVER_CONFIG_RELATIVE_PATH,
-    DEFAULT_SERVER_MISSION_RELATIVE_PATH, DEFAULT_SERVER_PATH, DEFAULT_SERVER_PORT,
-    DEFAULT_SERVER_PROFILE_RELATIVE_PATH, default_cpus,
+    DEFAULT_ADMIN_LOGS, DEFAULT_DO_LOGS, DEFAULT_LIMIT_FPS, DEFAULT_NET_LOGS, DEFAULT_SERVER_BATTLEYE_RELATIVE_PATH,
+    DEFAULT_SERVER_CONFIG_RELATIVE_PATH, DEFAULT_SERVER_MISSION_RELATIVE_PATH, DEFAULT_SERVER_PATH,
+    DEFAULT_SERVER_PORT, DEFAULT_SERVER_PROFILE_RELATIVE_PATH, default_cpus,
 };
 use crate::dayz::{ensure_server_created, ensure_server_not_created};
 use crate::db::db;
@@ -55,14 +54,10 @@ struct ServerCreation {
 #[instrument(level = "info", skip(cx), ret, err)]
 #[route(POST "/api/setup/create-server")]
 async fn create_owner(cx: &Cx, Form(input): Form<ServerCreation>) -> Result<SeeOther> {
-    ensure!(
-        ensure_server_created(cx).await.is_err(),
-        "Server has already been created"
-    )?;
+    ensure!(ensure_server_created(cx).await.is_err(), "Server has already been created")?;
     input.validate()?;
 
-    fs::create_dir_all(&input.server_path)
-        .map_err(|err| anyhow!("Failed to create given server path: {err:#?}"))?;
+    fs::create_dir_all(&input.server_path).map_err(|err| anyhow!("Failed to create given server path: {err:#?}"))?;
     // TODO: Check we have read/write/execute permissions in this folder
 
     let server_path = input.server_path.as_str();
@@ -86,9 +81,7 @@ async fn create_owner(cx: &Cx, Form(input): Form<ServerCreation>) -> Result<SeeO
 
 #[page]
 pub async fn setup_server(cx: &Cx) -> Result<impl View> {
-    ensure_server_not_created(cx)
-        .await
-        .ok_or_redirect(SetupStep::Done.to_uri())?;
+    ensure_server_not_created(cx).await.ok_or_redirect(SetupStep::Done.to_uri())?;
 
     Ok(view! {
         <form

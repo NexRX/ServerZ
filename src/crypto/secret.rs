@@ -1,10 +1,11 @@
+use super::{load, store};
 use argon2::Argon2;
 use derive_more::{Deref, DerefMut, Display};
 use garde::Validate;
 use password_hash::{PasswordHasher, PasswordVerifier, phc::PasswordHash};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use std::fmt::Debug;
+use std::{fmt::Debug, path::Path};
 
 #[derive(Clone, Validate, JsonSchema, Deref, DerefMut, Display, Serialize, Deserialize, Hash)]
 #[repr(transparent)]
@@ -46,9 +47,7 @@ impl<'a> Debug for SecretRef<'a> {
 
 impl Secret {
     pub fn hash(&self) -> Result<String, password_hash::Error> {
-        let hashed = Argon2::default()
-            .hash_password(self.0.as_bytes())?
-            .to_string();
+        let hashed = Argon2::default().hash_password(self.0.as_bytes())?.to_string();
 
         Ok(hashed)
     }
@@ -58,8 +57,16 @@ impl Secret {
             return false;
         };
 
-        Argon2::default()
-            .verify_password(self.0.as_bytes(), &parsed_hash)
-            .is_ok()
+        Argon2::default().verify_password(self.0.as_bytes(), &parsed_hash).is_ok()
+    }
+}
+
+impl Secret {
+    pub fn store(&self, path: impl AsRef<Path>, allow_group: bool) -> anyhow::Result<()> {
+        store(&self.0, path, allow_group)
+    }
+
+    pub fn load(path: impl AsRef<Path>) -> anyhow::Result<Self> {
+        load(path).map(Self)
     }
 }

@@ -44,11 +44,8 @@ fn ensure_tailwind_deps() {
 
     fs::create_dir_all(&directory).expect("could not create DaisyUI build directory");
     fs::write(&npmrc, "node-linker=hoisted\n").expect("could not write pnpm configuration");
-    fs::write(
-        &workspace_config,
-        "allowBuilds:\n  '@parcel/watcher': true\n",
-    )
-    .expect("could not write pnpm build policy");
+    fs::write(&workspace_config, "allowBuilds:\n  '@parcel/watcher': true\n")
+        .expect("could not write pnpm build policy");
     fs::write(&package_json, PACKAGE_JSON).expect("could not write Tailwind package manifest");
 
     if installed_daisyui.is_file() && installed_iconify.is_file() && installed_cli.is_file() {
@@ -74,14 +71,8 @@ fn tailwind() -> String {
     let dependency_dir = dependency_dir.display();
 
     if !wrapper.is_file() {
-        fs::write(
-            &wrapper,
-            format!(
-                "#!/bin/sh\nexec pnpm --dir '{}' exec tailwindcss \"$@\"\n",
-                dependency_dir
-            ),
-        )
-        .expect("could not create pnpm Tailwind wrapper");
+        fs::write(&wrapper, format!("#!/bin/sh\nexec pnpm --dir '{}' exec tailwindcss \"$@\"\n", dependency_dir))
+            .expect("could not create pnpm Tailwind wrapper");
     }
 
     Command::new("chmod")
@@ -95,31 +86,15 @@ fn tailwind() -> String {
 // ----- utils -----
 
 fn js_pkg_manager() -> (&'static str, &'static [&'static str]) {
-    const PNPM: (&str, &[&str]) = (
-        "pnpm",
-        &[
-            "install",
-            "--no-frozen-lockfile",
-            "--lockfile=false",
-            "--node-linker=hoisted",
-        ],
-    );
-    const NPM: (&str, &[&str]) = (
-        "npm",
-        &["install", "--ignore-scripts", "--no-audit", "--no-fund"],
-    );
+    const PNPM: (&str, &[&str]) =
+        ("pnpm", &["install", "--no-frozen-lockfile", "--lockfile=false", "--node-linker=hoisted"]);
+    const NPM: (&str, &[&str]) = ("npm", &["install", "--ignore-scripts", "--no-audit", "--no-fund"]);
 
     Command::new("pnpm")
         .arg("--version")
         .status()
         .is_ok_and(|status| status.success())
         .then_some(PNPM)
-        .or_else(|| {
-            Command::new("npm")
-                .arg("--version")
-                .status()
-                .is_ok_and(|status| status.success())
-                .then_some(NPM)
-        })
+        .or_else(|| Command::new("npm").arg("--version").status().is_ok_and(|status| status.success()).then_some(NPM))
         .expect("Could not find pnpm or npm; please install pnpm or npm")
 }

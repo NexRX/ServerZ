@@ -5,11 +5,7 @@ use topcoat::{
 };
 
 #[component]
-pub async fn accordion(
-    cx: &Cx,
-    #[default] mut attrs: Attributes,
-    #[default] child: Child<'_>,
-) -> Result<impl View> {
+pub async fn accordion(cx: &Cx, #[default] mut attrs: Attributes, #[default] child: Child<'_>) -> Result<impl View> {
     Ok(view! { <section class=(class!(attrs.remove("class"))) (attrs)>(child)</section> })
 }
 
@@ -42,11 +38,7 @@ pub async fn accordion_item(
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
-    let modifier = if plus {
-        "collapse-plus"
-    } else {
-        "collapse-arrow"
-    };
+    let modifier = if plus { "collapse-plus" } else { "collapse-arrow" };
     let checked = open.then_some("checked");
     Ok(view! {
         <div

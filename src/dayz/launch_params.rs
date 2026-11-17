@@ -19,14 +19,10 @@ pub const DEFAULT_SERVER_MISSION_RELATIVE_PATH: &str = "/mpmissions/dayzOffline.
 pub const DEFAULT_SERVER_BATTLEYE_RELATIVE_PATH: &str = "/battleye";
 
 pub const DEFAULT_SERVER_PATH: &str = concat!(DATA_FOLDER, "/server");
-pub const DEFAULT_SERVER_PROFILE_PATH: &str =
-    concat!(DEFAULT_SERVER_PATH, DEFAULT_SERVER_PROFILE_RELATIVE_PATH);
-pub const DEFAULT_SERVER_CONFIG_PATH: &str =
-    concat!(DEFAULT_SERVER_PATH, DEFAULT_SERVER_CONFIG_RELATIVE_PATH);
-pub const DEFAULT_SERVER_MISSION_PATH: &str =
-    concat!(DEFAULT_SERVER_PATH, DEFAULT_SERVER_MISSION_RELATIVE_PATH);
-pub const DEFAULT_SERVER_BATTLEYE_PATH: &str =
-    concat!(DEFAULT_SERVER_PATH, DEFAULT_SERVER_BATTLEYE_RELATIVE_PATH);
+pub const DEFAULT_SERVER_PROFILE_PATH: &str = concat!(DEFAULT_SERVER_PATH, DEFAULT_SERVER_PROFILE_RELATIVE_PATH);
+pub const DEFAULT_SERVER_CONFIG_PATH: &str = concat!(DEFAULT_SERVER_PATH, DEFAULT_SERVER_CONFIG_RELATIVE_PATH);
+pub const DEFAULT_SERVER_MISSION_PATH: &str = concat!(DEFAULT_SERVER_PATH, DEFAULT_SERVER_MISSION_RELATIVE_PATH);
+pub const DEFAULT_SERVER_BATTLEYE_PATH: &str = concat!(DEFAULT_SERVER_PATH, DEFAULT_SERVER_BATTLEYE_RELATIVE_PATH);
 
 /// Modelled after [launch parameters](https://community.bistudio.com/wiki/DayZ:Server_Configuration#Launch_Parameters)
 #[derive(Debug, Model)]
@@ -92,7 +88,5 @@ impl Singleton for LaunchParams {
 }
 
 pub fn default_cpus() -> u8 {
-    std::thread::available_parallelism()
-        .map(|v| v.get() as u8)
-        .unwrap_or(1)
+    std::thread::available_parallelism().map(|v| v.get() as u8).unwrap_or(1)
 }
