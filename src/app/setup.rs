@@ -3,7 +3,9 @@ mod owner;
 mod server;
 mod steam;
 
-use crate::{components::prelude::*, dayz::ensure_server_created, user::ensure_owner_created};
+use crate::{
+    components::prelude::*, dayz::ensure_server_created, steam::ensure_steam_is_setup, user::ensure_owner_created,
+};
 use constcat::concat;
 use derive_more::Display;
 use topcoat::{
@@ -11,7 +13,7 @@ use topcoat::{
     context::Cx,
     router::{
         Slot,
-        error::{RouterErrorExt, redirect},
+        error::{RedirectError, RouterErrorExt, redirect},
         layout, page,
         request::uri,
     },
@@ -26,18 +28,29 @@ pub(in super::setup) enum SetupStep {
     #[default]
     Owner,
     Server,
+    Steam,
     Done,
 }
 
 impl SetupStep {
-    #[allow(dead_code)]
-    pub const TOTAL: u8 = 3;
+    pub const WORK_STEPS: u8 = 3;
+    pub const TOTAL: u8 = Self::WORK_STEPS + 1;
 
     pub const fn number(self) -> u8 {
         match self {
-            SetupStep::Owner => 1,
-            SetupStep::Server => 2,
-            SetupStep::Done => 3,
+            Self::Owner => 1,
+            Self::Server => 2,
+            Self::Steam => 3,
+            Self::Done => 4,
+        }
+    }
+
+    pub const fn next(self) -> Self {
+        match self {
+            Self::Owner => Self::Server,
+            Self::Server => Self::Steam,
+            Self::Steam => Self::Done,
+            Self::Done => Self::Done,
         }
     }
 
@@ -48,6 +61,8 @@ impl SetupStep {
             Some(Self::Owner)
         } else if path.starts_with(Self::Server.to_uri()) {
             Some(Self::Server)
+        } else if path.starts_with(Self::Steam.to_uri()) {
+            Some(Self::Steam)
         } else if path.starts_with(Self::Done.to_uri()) {
             Some(Self::Done)
         } else {
@@ -59,6 +74,7 @@ impl SetupStep {
         match self {
             Self::Owner => concat!(SETUP_ROOT, "/owner"),
             Self::Server => concat!(SETUP_ROOT, "/server"),
+            Self::Steam => concat!(SETUP_ROOT, "/steam"),
             Self::Done => concat!(SETUP_ROOT, "/done"),
         }
     }
@@ -71,6 +87,7 @@ async fn setup_layout(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
     let setup_title = match current_step {
         SetupStep::Owner => "Owner Account",
         SetupStep::Server => "Server Config",
+        SetupStep::Steam => "Steam Downloads",
         SetupStep::Done => "Setup Finished",
     };
     let setup_description = match current_step {
@@ -80,6 +97,7 @@ async fn setup_layout(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
         SetupStep::Server => {
             "Enter and confirm the setup details for your DayZ server as this will define where your server is created and persisted to."
         }
+        SetupStep::Steam => "<TODO>",
         SetupStep::Done => "All done, Enjoy!",
     };
 
@@ -114,14 +132,16 @@ async fn setup_layout(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
     })
 }
 
+pub async fn ensure_setup(cx: &Cx) -> Result<(), RedirectError> {
+    ensure_owner_created(cx).await.ok_or_redirect(SetupStep::Owner.to_uri())?;
+    ensure_server_created(cx).await.ok_or_redirect(SetupStep::Server.to_uri())?;
+    ensure_steam_is_setup(cx).await.ok_or_redirect(SetupStep::Steam.to_uri())?;
+    Ok(())
+}
+
 #[page]
 pub async fn setup(cx: &Cx) -> Result<()> {
-    ensure_owner_created(cx)
-        .await
-        .ok_or_redirect(SetupStep::Owner.to_uri())?;
-    ensure_server_created(cx)
-        .await
-        .ok_or_redirect(SetupStep::Server.to_uri())?;
+    ensure_setup(cx).await?;
     Err(redirect("/").into())
 }
 
@@ -144,7 +164,7 @@ async fn step_display(cx: &Cx, current_step: SetupStep) -> Result<impl View> {
                         step(
                             content: "2",
                             color: match current_step.number() {
-                                2 => StepColor::Accent,
+                                2 | 3 => StepColor::Accent,
                                 SetupStep::TOTAL => StepColor::Success,
                                 _ => StepColor::default(),
                             }
@@ -152,6 +172,7 @@ async fn step_display(cx: &Cx, current_step: SetupStep) -> Result<impl View> {
                         step(
                             content: "3",
                             color: match current_step.number() {
+                                3 => StepColor::Accent,
                                 SetupStep::TOTAL => StepColor::Success,
                                 _ => StepColor::default(),
                             }

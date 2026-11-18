@@ -4,7 +4,7 @@ pub mod setup;
 pub mod showcase;
 
 use crate::features::guards::require_login;
-use crate::features::{app_menu::app_menu, guards::require_server};
+use crate::features::{app_menu::app_menu, guards::require_setup};
 use toasty::Db;
 use topcoat::cookie::CookieLayer;
 use topcoat::{
@@ -41,13 +41,13 @@ async fn root(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
 
     let is_require_setup = !(path.starts_with("/setup") || path.starts_with("/showcase"));
     if is_require_setup {
-        trace!("Requiring setup for {path}");
-        require_server(cx).await?;
+        trace!(?path, "Requiring setup");
+        require_setup(cx).await?;
     }
 
-    let is_require_login = !(is_require_setup || path.starts_with("/login"));
+    let is_require_login = !(!is_require_setup || path.starts_with("/login"));
     if is_require_login {
-        trace!("Requiring login for {path}");
+        trace!(?is_require_setup, ?path, "Requiring login");
         require_login(cx).await?;
     }
 

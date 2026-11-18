@@ -54,7 +54,7 @@ struct ServerCreation {
 #[instrument(level = "info", skip(cx), ret, err)]
 #[route(POST "/api/setup/create-server")]
 async fn create_owner(cx: &Cx, Form(input): Form<ServerCreation>) -> Result<SeeOther> {
-    ensure!(ensure_server_created(cx).await.is_err(), "Server has already been created")?;
+    ensure!(ensure_server_created(cx).await.is_err(), "Server has already been created");
     input.validate()?;
 
     fs::create_dir_all(&input.server_path).map_err(|err| anyhow!("Failed to create given server path: {err:#?}"))?;
@@ -76,12 +76,12 @@ async fn create_owner(cx: &Cx, Form(input): Form<ServerCreation>) -> Result<SeeO
     .exec(&mut db(cx))
     .await?;
 
-    Ok(see_other(SetupStep::Done.to_uri()))
+    Ok(see_other(SetupStep::Server.next().to_uri()))
 }
 
 #[page]
 pub async fn setup_server(cx: &Cx) -> Result<impl View> {
-    ensure_server_not_created(cx).await.ok_or_redirect(SetupStep::Done.to_uri())?;
+    ensure_server_not_created(cx).await.ok_or_redirect(SetupStep::Server.next().to_uri())?;
 
     Ok(view! {
         <form

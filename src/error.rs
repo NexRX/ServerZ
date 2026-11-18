@@ -46,10 +46,8 @@ macro_rules! anyhow {
 #[macro_export]
 macro_rules! ensure {
     ($condition:expr $(,)?) => {{
-        if $condition {
-            Ok::<(), topcoat::Error>(())
-        } else {
-            Err(topcoat::Error::from_anyhow(anyhow::anyhow!(concat!(
+        if !$condition {
+            return Err(topcoat::Error::from_anyhow(anyhow::anyhow!(concat!(
                 "Condition failed: `",
                 stringify!($condition),
                 "`"
@@ -57,24 +55,18 @@ macro_rules! ensure {
         }
     }};
     ($condition:expr, $message:literal $(,)?) => {{
-        if $condition {
-            Ok::<(), topcoat::Error>(())
-        } else {
-            Err(topcoat::Error::from_anyhow(anyhow::anyhow!($message)))
+        if !$condition {
+            return Err(topcoat::Error::from_anyhow(anyhow::anyhow!($message)))
         }
     }};
     ($condition:expr, $error:expr $(,)?) => {{
-        if $condition {
-            Ok::<(), topcoat::Error>(())
-        } else {
-            Err(topcoat::Error::from_anyhow(anyhow::anyhow!($error)))
+        if !$condition {
+            return Err(topcoat::Error::from_anyhow(anyhow::anyhow!($error)))
         }
     }};
     ($condition:expr, $format:expr, $($arg:tt)*) => {{
-        if $condition {
-            Ok::<(), topcoat::Error>(())
-        } else {
-            Err(topcoat::Error::from_anyhow(anyhow::anyhow!($format, $($arg)*)))
+        if !$condition {
+            return Err(topcoat::Error::from_anyhow(anyhow::anyhow!($format, $($arg)*)))
         }
     }};
 }

@@ -4,3 +4,4 @@
 .cargo/build-assets/daisyui/
 .cargo/build-assets/tailwind_deps/
 data/
+ServerZ-macros/target/

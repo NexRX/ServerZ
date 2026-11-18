@@ -2,7 +2,288 @@ use darling::FromField;
 use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::quote;
-use syn::{Data, DeriveInput, Expr, ExprLit, Lit, LitStr, Meta, parse_macro_input};
+use std::{env, fs, path::PathBuf};
+
+use syn::{
+    Data, DeriveInput, Expr, ExprLit, Lit, LitStr, Meta, Token, parse::Parse, parse::ParseStream, parse_macro_input,
+};
+
+struct GithubReleaseAssetBytesInput {
+    release_url: LitStr,
+    asset_name: Option<LitStr>,
+}
+
+impl Parse for GithubReleaseAssetBytesInput {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
+        let release_url = input.parse()?;
+        let asset_name = if input.is_empty() {
+            None
+        } else {
+            input.parse::<Token![,]>()?;
+            Some(input.parse()?)
+        };
+        if !input.is_empty() {
+            return Err(input.error("expected a release URL and optional asset filename"));
+        }
+        Ok(Self { release_url, asset_name })
+    }
+}
+
+#[derive(serde::Deserialize)]
+struct GithubRelease {
+    assets: Vec<GithubAsset>,
+}
+
+#[derive(serde::Deserialize)]
+struct GithubAsset {
+    name: String,
+    size: u64,
+}
+
+const ARCH_ALT_MAPPINGS: &[(&str, &str)] = &[("arm", "arm"), ("aarch64", "arm64"), ("x86_64", "x64")];
+
+fn arch_alt_for(target_arch: &str) -> Option<&'static str> {
+    ARCH_ALT_MAPPINGS.iter().find_map(|&(target, alternate)| (target == target_arch).then_some(alternate))
+}
+
+/// Expands to the alternate asset architecture name for the current target.
+#[proc_macro]
+pub fn arch_alt(input: TokenStream) -> TokenStream {
+    if !input.is_empty() {
+        return syn::Error::new(Span::call_site(), "`arch_alt!` takes no arguments").to_compile_error().into();
+    }
+
+    let arms = ARCH_ALT_MAPPINGS.iter().map(|&(target_arch, alternate)| {
+        let target_arch = LitStr::new(target_arch, Span::call_site());
+        let alternate = LitStr::new(alternate, Span::call_site());
+        quote! {
+            #[cfg(target_arch = #target_arch)]
+            { #alternate }
+        }
+    });
+    let supported_targets = ARCH_ALT_MAPPINGS.iter().map(|&(target_arch, _)| {
+        let target_arch = LitStr::new(target_arch, Span::call_site());
+        quote!(target_arch = #target_arch)
+    });
+
+    quote! {
+        {
+            #(#arms)*
+            #[cfg(not(any(#(#supported_targets),*)))]
+            {
+                compile_error!("unsupported target architecture for `arch_alt!`");
+                ""
+            }
+        }
+    }
+    .into()
+}
+
+/// Expands to the byte size of a named GitHub release asset, or the total
+/// byte size of all assets when no filename is provided.
+///
+/// ```ignore
+/// github_release_asset_bytes!(
+///     "https://github.com/OWNER/REPOSITORY/releases/tag/TAG",
+///     "asset-name.zip"
+/// );
+/// ```
+///
+/// The release API is queried while the crate is compiled. Results are cached
+/// under `target/server-z-macros/github-release-asset-bytes`, keyed by the
+/// exact URL. Set `GITHUB_TOKEN` in the build environment to raise the GitHub
+/// API rate limit.
+#[proc_macro]
+pub fn github_release_asset_bytes(input: TokenStream) -> TokenStream {
+    let input = parse_macro_input!(input as GithubReleaseAssetBytesInput);
+    let url = input.release_url.value();
+    let asset_name = input.asset_name.map(|name| name.value());
+
+    let result = match asset_name.as_deref() {
+        Some(template) if template.contains("{OS}") || template.contains("{ARCH_ALT}") => {
+            expand_asset_template(&url, template)
+        }
+        _ => github_release_asset_bytes_impl(&url, asset_name.as_deref()).map(|size| quote!(#size)),
+    };
+
+    match result {
+        Ok(tokens) => tokens.into(),
+        Err(error) => syn::Error::new(Span::call_site(), error).to_compile_error().into(),
+    }
+}
+
+fn expand_asset_template(url: &str, template: &str) -> Result<proc_macro2::TokenStream, String> {
+    const TARGETS: &[(&str, &str)] = &[
+        ("macos", "x86_64"),
+        ("macos", "aarch64"),
+        ("linux", "x86_64"),
+        ("linux", "aarch64"),
+        ("linux", "arm"),
+        ("windows", "x86_64"),
+        ("windows", "aarch64"),
+    ];
+
+    let mut sizes = Vec::with_capacity(TARGETS.len());
+    let mut missing = false;
+    for &(os, target_arch) in TARGETS {
+        let arch_alt = arch_alt_for(target_arch).expect("target architecture must have an alternate mapping");
+        let asset_name = template.replace("{OS}", os).replace("{ARCH_ALT}", arch_alt);
+        if read_cached_size(url, Some(&asset_name)).is_none() {
+            missing = true;
+        }
+        sizes.push(asset_name);
+    }
+
+    let release = if missing { Some(fetch_release(url)?) } else { None };
+    let mut arms = Vec::with_capacity(TARGETS.len());
+    for ((os, arch), asset_name) in TARGETS.iter().zip(sizes) {
+        let arch_alt = arch_alt_for(arch).expect("target architecture must have an alternate mapping");
+        let size = match read_cached_size(url, Some(&asset_name)) {
+            Some(size) => size,
+            None => {
+                let release = release.as_ref().expect("release fetched for missing asset");
+                let resolved_name = template.replace("{OS}", os).replace("{ARCH_ALT}", arch_alt);
+                let asset = release
+                    .assets
+                    .iter()
+                    .find(|asset| asset.name == resolved_name)
+                    .ok_or_else(|| format!("GitHub release does not contain an asset named `{resolved_name}`"))?;
+                write_cached_size(url, Some(&asset_name), u128::from(asset.size));
+                u128::from(asset.size)
+            }
+        };
+        let literal = proc_macro2::Literal::u128_unsuffixed(size);
+        let os = syn::LitStr::new(os, Span::call_site());
+        let arch = syn::LitStr::new(arch, Span::call_site());
+        arms.push(quote! {
+            #[cfg(all(target_os = #os, target_arch = #arch))]
+            { #literal }
+        });
+    }
+
+    Ok(quote! {
+        {
+            #(#arms)*
+            #[cfg(not(any(
+                all(target_os = "macos", target_arch = "x86_64"),
+                all(target_os = "macos", target_arch = "aarch64"),
+                all(target_os = "linux", target_arch = "x86_64"),
+                all(target_os = "linux", target_arch = "aarch64"),
+                all(target_os = "linux", target_arch = "arm"),
+                all(target_os = "windows", target_arch = "x86_64"),
+                all(target_os = "windows", target_arch = "aarch64"),
+            )))]
+            { compile_error!("unsupported target for GitHub asset template"); 0u128 }
+        }
+    })
+}
+
+fn github_release_asset_bytes_impl(url: &str, asset_name: Option<&str>) -> Result<u128, String> {
+    if let Some(size) = read_cached_size(url, asset_name) {
+        return Ok(size);
+    }
+
+    let release = fetch_release(url)?;
+    let assets = if let Some(asset_name) = asset_name {
+        let asset = release
+            .assets
+            .iter()
+            .find(|asset| asset.name == asset_name)
+            .ok_or_else(|| format!("GitHub release does not contain an asset named `{asset_name}`"))?;
+        std::slice::from_ref(asset)
+    } else {
+        release.assets.as_slice()
+    };
+    let size = assets.iter().try_fold(0_u128, |total, asset| {
+        total.checked_add(u128::from(asset.size)).ok_or_else(|| "GitHub asset sizes overflowed u128".to_owned())
+    })?;
+
+    write_cached_size(url, asset_name, size);
+    Ok(size)
+}
+
+fn fetch_release(url: &str) -> Result<GithubRelease, String> {
+    let path = url
+        .strip_prefix("https://github.com/")
+        .ok_or_else(|| "expected an https://github.com release URL".to_owned())?
+        .trim_end_matches('/');
+    let mut parts = path.splitn(4, '/');
+    let owner = parts.next().unwrap_or_default();
+    let repository = parts.next().unwrap_or_default();
+    let releases = parts.next().unwrap_or_default();
+    let tag = parts.next().unwrap_or_default();
+
+    if owner.is_empty() || repository.is_empty() || releases != "releases" || !tag.starts_with("tag/") {
+        return Err("expected https://github.com/OWNER/REPOSITORY/releases/tag/TAG".to_owned());
+    }
+    let tag = &tag[4..];
+    if tag.is_empty() || tag.contains('?') || tag.contains('#') {
+        return Err("the GitHub release URL must include a tag".to_owned());
+    }
+
+    let api_url = format!("https://api.github.com/repos/{owner}/{repository}/releases/tags/{tag}");
+    let client = reqwest::blocking::Client::builder()
+        .user_agent("server-z-build-script")
+        .build()
+        .map_err(|error| format!("could not create GitHub API client: {error}"))?;
+    let mut request = client.get(api_url).header("Accept", "application/vnd.github+json");
+    if let Ok(token) = std::env::var("GITHUB_TOKEN") {
+        request = request.bearer_auth(token);
+    }
+
+    let response = request.send().map_err(|error| format!("could not query GitHub release: {error}"))?;
+    let response =
+        response.error_for_status().map_err(|error| format!("GitHub release API returned an error: {error}"))?;
+    response.json().map_err(|error| format!("could not parse GitHub release response: {error}"))
+}
+
+fn cache_file(url: &str, asset_name: Option<&str>) -> Option<PathBuf> {
+    let target_dir = env::var_os("SERVERZ_MACRO_CACHE_DIR")
+        .map(PathBuf::from)
+        .or_else(|| env::var_os("CARGO_TARGET_DIR").map(PathBuf::from))
+        .or_else(|| env::var_os("CARGO_MANIFEST_DIR").map(|dir| PathBuf::from(dir).join("target")))?;
+
+    Some(
+        target_dir
+            .join("server-z-macros")
+            .join("github-release-asset-bytes")
+            .join(hex_encode(format!("{url}\0{}", asset_name.unwrap_or("*")).as_bytes()))
+            .with_extension("txt"),
+    )
+}
+
+fn read_cached_size(url: &str, asset_name: Option<&str>) -> Option<u128> {
+    let path = cache_file(url, asset_name)?;
+    fs::read_to_string(path).ok()?.trim().parse().ok()
+}
+
+fn write_cached_size(url: &str, asset_name: Option<&str>, size: u128) {
+    let Some(path) = cache_file(url, asset_name) else {
+        return;
+    };
+    let Some(parent) = path.parent() else {
+        return;
+    };
+
+    if fs::create_dir_all(parent).is_err() {
+        return;
+    }
+
+    let temporary_path = path.with_extension(format!("tmp-{}", std::process::id()));
+    if fs::write(&temporary_path, size.to_string()).is_ok() {
+        let _ = fs::rename(temporary_path, path);
+    }
+}
+
+fn hex_encode(bytes: &[u8]) -> String {
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut encoded = String::with_capacity(bytes.len() * 2);
+    for &byte in bytes {
+        encoded.push(HEX[(byte >> 4) as usize] as char);
+        encoded.push(HEX[(byte & 0x0f) as usize] as char);
+    }
+    encoded
+}
 
 #[derive(Debug, FromField)]
 #[darling(attributes(form))]

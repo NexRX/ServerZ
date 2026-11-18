@@ -1,3 +1,7 @@
+mod depot;
+
+pub use depot::*;
+
 use crate::{
     crypto::Encrypted,
     db::{Singleton, db},

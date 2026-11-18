@@ -18,7 +18,7 @@ use tracing::instrument;
 #[instrument(level = "info", skip(cx), ret, err)]
 #[route(POST "/api/setup/create-owner")]
 async fn create_owner(cx: &Cx, Form(input): Form<Login>) -> Result<SeeOther> {
-    ensure!(ensure_owner_created(cx).await.is_err(), "Owner has already been created")?;
+    ensure!(ensure_owner_created(cx).await.is_err(), "Owner has already been created");
     input.validate()?;
 
     let user =
@@ -29,12 +29,12 @@ async fn create_owner(cx: &Cx, Form(input): Form<Login>) -> Result<SeeOther> {
     // save session so they dont have to login post-setup
     Session::persist(cx, &user, session::start(cx).await?).await?;
 
-    Ok(see_other(SetupStep::Server.to_uri()))
+    Ok(see_other(SetupStep::Owner.next().to_uri()))
 }
 
 #[page]
 pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
-    ensure_owner_not_created(cx).await.ok_or_redirect(SetupStep::Server.to_uri())?;
+    ensure_owner_not_created(cx).await.ok_or_redirect(SetupStep::Owner.next().to_uri())?;
 
     Ok(view! {
         <form
