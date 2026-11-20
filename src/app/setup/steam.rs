@@ -1,43 +1,63 @@
-use super::SetupStep;
-use crate::app::api::auth::{Login, LoginValidation};
 use crate::components::prelude::*;
-use crate::db::db;
-use crate::steam::ensure_steam_is_not_setup;
-use crate::user::{Role, Session, User, ensure_owner_not_created};
-use crate::{ensure, user::ensure_owner_created};
-use garde::Validate;
-use topcoat::router::error::{RouterErrorExt as _, SeeOther, see_other};
-use topcoat::runtime::{Event, procedure};
-use topcoat::session;
+use crate::guard::Guard;
+use crate::steam::{Depot, Steam};
+use tokio::sync::broadcast::error::RecvError;
+use topcoat::runtime::{Event, signal};
+use topcoat::view::component;
+use topcoat::view::{emit, live};
 use topcoat::{
     Result,
     context::Cx,
-    router::{content::Form, page, route},
+    router::page,
     view::{View, attributes, view},
 };
-use tracing::instrument;
-
-#[procedure]
-#[instrument(level = "info", skip_all)]
-async fn start_download(cx: &Cx) -> Result<usize> {
-    ensure_steam_is_not_setup(cx).await.ok_or_redirect(SetupStep::Steam.next().to_uri())?;
-
-    Ok(1 * 2)
-}
+use tracing::debug;
 
 #[page]
 pub async fn setup_steam(cx: &Cx) -> Result<impl View> {
-    ensure_steam_is_not_setup(cx).await.ok_or_redirect(SetupStep::Steam.next().to_uri())?;
+    Steam::ensure_unavailable(cx).await?;
+
+    let started = signal(cx, || false);
 
     Ok(view! {
-        "Start Steam Download?"
-        button(
-            attrs: attributes! {
-                @click=$(async |_e: Event| {
-                    start_download().await;
-                })
-            },
-            "Start"
-        )
+        if started.get() {
+            download_progress()
+        } else {
+            "Start Steam Download?"
+            button(
+                attrs: attributes! {
+                    @click=$(async |_e: Event| {
+                        started.set(true);
+                    })
+                },
+                "Start"
+            )
+        }
+    })
+}
+
+#[component]
+async fn download_progress(cx: &Cx) -> Result<impl View> {
+    debug!("Starting download");
+    Ok(view! {
+        <h1>"Downloader..."</h1>
+        (live! {
+            let mut downloader = Depot::downloader();
+            let mut subscriber = downloader.subscribe();
+            downloader.start_bg();
+
+            loop {
+                let event = match subscriber.recv().await {
+                    Ok(event) => event,
+                    Err(RecvError::Lagged(_)) => continue,
+                    Err(RecvError::Closed) => break,
+                };
+                emit! { <p>(event.to_string())</p> }?;
+                if event.is_completed() {
+                    break;
+                }
+            };
+            emit! { <p>"Done!"</p> }
+        })
     })
 }

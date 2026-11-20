@@ -2,14 +2,11 @@ mod depot;
 
 pub use depot::*;
 
-use crate::{
-    crypto::Encrypted,
-    db::{Singleton, db},
-};
+use crate::{crypto::Encrypted, db::Singleton, guard::Guard};
+use anyhow::ensure;
 use jiff::Timestamp;
-use toasty::{Executor, Model, stmt::Uuid};
-use topcoat::context::{Cx, memoize};
-use tracing::instrument;
+use toasty::{Executor, Model};
+use topcoat::context::Cx;
 
 #[derive(Debug, Clone, Model)]
 pub struct Steam {
@@ -28,5 +25,16 @@ pub struct Steam {
 impl Singleton for Steam {
     async fn get(db: &mut dyn Executor) -> toasty::Result<Self> {
         Self::get_by_id(db, Self::SINGLETON_ID).await
+    }
+}
+
+impl Guard for Steam {
+    const GUARD_NAME: &str = "Steam";
+    const REDIRECT_AVAILABLE: &str = "/setup/done";
+    const REDIRECT_UNAVAILABLE: &str = "/setup/steam";
+
+    async fn fetch_available(cx: &Cx) -> anyhow::Result<Self> {
+        ensure!(Depot::is_downloaded().await?, "Depot is not downloaded");
+        Self::fetch(cx).await.map_err(Into::into)
     }
 }

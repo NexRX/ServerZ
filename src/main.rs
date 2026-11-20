@@ -5,17 +5,21 @@ mod components;
 mod crypto;
 mod dayz;
 mod db;
+mod download;
 mod error;
 mod features;
+mod guard;
 mod steam;
 mod user;
 
-use tracing::info;
+use constcat::concat;
+use tracing::{info, instrument};
 
 #[cfg(debug_assertions)]
 pub const DATA_FOLDER: &str = "./data";
 #[cfg(not(debug_assertions))]
 pub const DATA_FOLDER: &str = "/var/lib/serverz";
+pub const TMP_FOLDER: &str = concat!(DATA_FOLDER, "/tmp");
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -24,6 +28,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     db::handle_cli_migration().await;
 
     info!("Starting ServerZ");
+    cleanup()?;
+
     let db = db::try_connect().await?;
     db::migrate(&db).await?;
 
@@ -44,4 +50,15 @@ fn init_logging() {
         )
         .with_target(false)
         .init();
+}
+
+#[instrument(level = "debug", ret, err)]
+fn cleanup() -> anyhow::Result<()> {
+    match std::fs::remove_dir_all(TMP_FOLDER) {
+        Ok(()) => {}
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+        Err(e) => return Err(e.into()),
+    }
+    std::fs::create_dir_all(TMP_FOLDER)?;
+    Ok(())
 }

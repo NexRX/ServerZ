@@ -3,20 +3,15 @@ mod owner;
 mod server;
 mod steam;
 
-use crate::{
-    components::prelude::*, dayz::ensure_server_created, steam::ensure_steam_is_setup, user::ensure_owner_created,
-};
+pub use done::ensure_setup;
+
+use crate::components::prelude::*;
 use constcat::concat;
 use derive_more::Display;
 use topcoat::{
     Result,
     context::Cx,
-    router::{
-        Slot,
-        error::{RedirectError, RouterErrorExt, redirect},
-        layout, page,
-        request::uri,
-    },
+    router::{Slot, error::redirect, layout, page, request::uri},
     view::{View, component, view},
 };
 use tracing::instrument;
@@ -132,17 +127,10 @@ async fn setup_layout(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
     })
 }
 
-pub async fn ensure_setup(cx: &Cx) -> Result<(), RedirectError> {
-    ensure_owner_created(cx).await.ok_or_redirect(SetupStep::Owner.to_uri())?;
-    ensure_server_created(cx).await.ok_or_redirect(SetupStep::Server.to_uri())?;
-    ensure_steam_is_setup(cx).await.ok_or_redirect(SetupStep::Steam.to_uri())?;
-    Ok(())
-}
-
 #[page]
 pub async fn setup(cx: &Cx) -> Result<()> {
     ensure_setup(cx).await?;
-    Err(redirect("/").into())
+    Err(redirect("/setup/done").into())
 }
 
 #[component]

@@ -73,9 +73,7 @@ pub async fn me(cx: &Cx) -> Result<Option<User>> {
 }
 
 /// Returns the current user
+#[allow(unused)]
 pub async fn me_cloned(cx: &Cx) -> Result<Option<User>> {
-    Ok(me(cx).await.map(|v| match v {
-        Some(user) => Some(user.clone()),
-        None => None,
-    })?)
+    Ok(me(cx).await.cloned()?)
 }

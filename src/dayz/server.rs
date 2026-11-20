@@ -1,12 +1,11 @@
 use crate::{
     dayz::{launch_params::LaunchParams, mods::Mod},
-    db::{Singleton, db},
+    db::Singleton,
+    guard::Guard,
 };
-use anyhow::ensure;
 use jiff::Timestamp;
 use toasty::{Executor, Model};
-use topcoat::context::{Cx, memoize};
-use tracing::instrument;
+use topcoat::context::Cx;
 
 #[derive(Debug, Model)]
 pub struct Server {
@@ -30,22 +29,12 @@ impl Singleton for Server {
     }
 }
 
-#[memoize]
-#[instrument(level = "trace", skip_all, ret)]
-pub async fn is_server_setup(cx: &Cx) -> bool {
-    Server::get(&mut db(cx)).await.is_ok()
-}
+impl Guard for Server {
+    const GUARD_NAME: &str = "Server";
+    const REDIRECT_AVAILABLE: &str = "/setup/owner";
+    const REDIRECT_UNAVAILABLE: &str = "/setup/server";
 
-#[memoize(as_ref)]
-#[instrument(level = "debug", skip_all, ret)]
-pub async fn ensure_server_created(cx: &Cx) -> anyhow::Result<()> {
-    ensure!(*is_server_setup(cx).await, "No server is created");
-    Ok(())
-}
-
-#[memoize(as_ref)]
-#[instrument(level = "debug", skip_all, ret)]
-pub async fn ensure_server_not_created(cx: &Cx) -> anyhow::Result<()> {
-    ensure!(!*is_server_setup(cx).await, "Server is already created");
-    Ok(())
+    async fn fetch_available(cx: &Cx) -> anyhow::Result<Self> {
+        Server::fetch(cx).await.map_err(Into::into)
+    }
 }

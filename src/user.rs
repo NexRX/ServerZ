@@ -1,14 +1,12 @@
 mod session;
 
-pub use session::*;
-
-use anyhow::ensure;
+use crate::{app::api::auth::me_cloned, db::db, guard::Guard};
+use anyhow::anyhow;
+use derive_more::{Deref, DerefMut};
 use jiff::Timestamp;
+pub use session::*;
 use toasty::{Embed, Model, stmt::Uuid};
-use topcoat::context::{Cx, memoize};
-use tracing::instrument;
-
-use crate::db::db;
+use topcoat::context::Cx;
 
 #[derive(Debug, Clone, Model)]
 pub struct User {
@@ -36,22 +34,29 @@ pub enum Role {
     Guest,
 }
 
-#[memoize(as_ref)]
-#[instrument(level = "debug", skip_all, ret)]
-pub async fn ensure_owner_created(cx: &Cx) -> anyhow::Result<()> {
-    let is_created =
-        User::filter(User::fields().role().eq(Role::Owner)).count().exec(&mut db(cx)).await.map(|count| count > 0)?;
-    ensure!(is_created, "No user is created");
+impl Guard for User {
+    const GUARD_NAME: &str = "User";
+    const REDIRECT_UNAVAILABLE: &str = "/login";
 
-    Ok(())
+    async fn fetch_available(cx: &Cx) -> anyhow::Result<Self> {
+        me_cloned(cx).await.map_err(|err| anyhow!("{err:?}"))?.ok_or_else(|| anyhow!("Not logged in"))
+    }
 }
 
-#[memoize(as_ref)]
-#[instrument(level = "debug", skip_all, ret)]
-pub async fn ensure_owner_not_created(cx: &Cx) -> anyhow::Result<()> {
-    let is_not_created =
-        User::filter(User::fields().role().eq(Role::Owner)).count().exec(&mut db(cx)).await.map(|count| count == 0)?;
-    ensure!(is_not_created, "User is already created");
+#[derive(Debug, Clone, Deref, DerefMut)]
+pub struct Owner(pub User);
 
-    Ok(())
+impl Guard for Owner {
+    const GUARD_NAME: &str = "Owner";
+    const REDIRECT_UNAVAILABLE: &str = "/setup/owner";
+
+    async fn fetch_available(cx: &Cx) -> anyhow::Result<Self> {
+        User::filter(User::fields().role().eq(Role::Owner))
+            .first()
+            .exec(&mut db(cx))
+            .await
+            .map_err(|err| anyhow!("Failed to fetch owner: {err:?}"))?
+            .map(Owner)
+            .ok_or_else(|| anyhow!("No owner account found"))
+    }
 }

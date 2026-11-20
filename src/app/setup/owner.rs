@@ -2,10 +2,10 @@ use super::SetupStep;
 use crate::app::api::auth::{Login, LoginValidation};
 use crate::components::prelude::*;
 use crate::db::db;
-use crate::user::{Role, Session, User, ensure_owner_not_created};
-use crate::{ensure, user::ensure_owner_created};
+use crate::guard::Guard as _;
+use crate::user::{Owner, Role, Session, User};
 use garde::Validate;
-use topcoat::router::error::{RouterErrorExt as _, SeeOther, see_other};
+use topcoat::router::error::{SeeOther, see_other};
 use topcoat::session;
 use topcoat::{
     Result,
@@ -18,7 +18,7 @@ use tracing::instrument;
 #[instrument(level = "info", skip(cx), ret, err)]
 #[route(POST "/api/setup/create-owner")]
 async fn create_owner(cx: &Cx, Form(input): Form<Login>) -> Result<SeeOther> {
-    ensure!(ensure_owner_created(cx).await.is_err(), "Owner has already been created");
+    Owner::ensure_unavailable(cx).await?;
     input.validate()?;
 
     let user =
@@ -34,7 +34,7 @@ async fn create_owner(cx: &Cx, Form(input): Form<Login>) -> Result<SeeOther> {
 
 #[page]
 pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
-    ensure_owner_not_created(cx).await.ok_or_redirect(SetupStep::Owner.next().to_uri())?;
+    Owner::ensure_unavailable(cx).await?;
 
     Ok(view! {
         <form

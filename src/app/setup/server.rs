@@ -1,4 +1,5 @@
 use super::SetupStep;
+use crate::anyhow;
 use crate::components::prelude::*;
 use crate::dayz::Server;
 use crate::dayz::{
@@ -6,15 +7,14 @@ use crate::dayz::{
     DEFAULT_SERVER_CONFIG_RELATIVE_PATH, DEFAULT_SERVER_MISSION_RELATIVE_PATH, DEFAULT_SERVER_PATH,
     DEFAULT_SERVER_PORT, DEFAULT_SERVER_PROFILE_RELATIVE_PATH, default_cpus,
 };
-use crate::dayz::{ensure_server_created, ensure_server_not_created};
 use crate::db::db;
-use crate::{anyhow, ensure};
+use crate::guard::Guard;
 use garde::Validate;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use server_z_macros::FormValidation;
 use std::fs;
-use topcoat::router::error::{RouterErrorExt as _, SeeOther, see_other};
+use topcoat::router::error::{SeeOther, see_other};
 use topcoat::{
     Result,
     context::Cx,
@@ -54,7 +54,7 @@ struct ServerCreation {
 #[instrument(level = "info", skip(cx), ret, err)]
 #[route(POST "/api/setup/create-server")]
 async fn create_owner(cx: &Cx, Form(input): Form<ServerCreation>) -> Result<SeeOther> {
-    ensure!(ensure_server_created(cx).await.is_err(), "Server has already been created");
+    Server::ensure_unavailable(cx).await?;
     input.validate()?;
 
     fs::create_dir_all(&input.server_path).map_err(|err| anyhow!("Failed to create given server path: {err:#?}"))?;
@@ -81,7 +81,7 @@ async fn create_owner(cx: &Cx, Form(input): Form<ServerCreation>) -> Result<SeeO
 
 #[page]
 pub async fn setup_server(cx: &Cx) -> Result<impl View> {
-    ensure_server_not_created(cx).await.ok_or_redirect(SetupStep::Server.next().to_uri())?;
+    Server::ensure_unavailable(cx).await?;
 
     Ok(view! {
         <form
