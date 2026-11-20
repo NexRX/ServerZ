@@ -1,3 +1,5 @@
+use std::any::type_name;
+
 use anyhow::Result;
 use topcoat::{
     context::Cx,
@@ -6,7 +8,6 @@ use topcoat::{
 use tracing::{error, instrument};
 
 pub trait Guard: Sized {
-    const GUARD_NAME: &str;
     const REDIRECT_AVAILABLE: &str = "/";
     const REDIRECT_UNAVAILABLE: &str;
 
@@ -24,7 +25,7 @@ pub trait Guard: Sized {
     }
 
     #[allow(dead_code)]
-    #[instrument(level = "debug", skip_all, fields(guard = %Self::GUARD_NAME), err)]
+    #[instrument(level = "debug", skip_all, fields(guard = %type_name::<Self>()), err(level = "warn"))]
     async fn require(cx: &Cx) -> Result<Self, RedirectError> {
         match Self::fetch_available(cx).await {
             Ok(v) => Ok(v),
@@ -35,7 +36,7 @@ pub trait Guard: Sized {
         }
     }
 
-    #[instrument(level = "debug", skip_all, fields(guard = %Self::GUARD_NAME), ret, err)]
+    #[instrument(level = "debug", skip_all, fields(guard = %type_name::<Self>()), ret, err(level = "warn"))]
     async fn ensure_available(cx: &Cx) -> Result<(), RedirectError> {
         match Self::is_available_or_default(cx).await {
             true => Ok(()),
@@ -43,7 +44,7 @@ pub trait Guard: Sized {
         }
     }
 
-    #[instrument(level = "debug", skip_all, fields(guard = %Self::GUARD_NAME), ret, err)]
+    #[instrument(level = "debug", skip_all, fields(guard = %type_name::<Self>()), ret, err(level = "warn"))]
     async fn ensure_unavailable(cx: &Cx) -> Result<(), RedirectError> {
         match Self::is_available_or_default(cx).await {
             true => Err(redirect(Self::REDIRECT_AVAILABLE)),

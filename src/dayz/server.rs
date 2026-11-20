@@ -30,7 +30,6 @@ impl Singleton for Server {
 }
 
 impl Guard for Server {
-    const GUARD_NAME: &str = "Server";
     const REDIRECT_AVAILABLE: &str = "/setup/owner";
     const REDIRECT_UNAVAILABLE: &str = "/setup/server";
 

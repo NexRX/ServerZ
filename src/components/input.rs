@@ -151,15 +151,29 @@ pub async fn input(
     #[default] size: InputSize,
     #[default] variant: InputVariant,
     #[default(true)] validator: bool,
-    #[default] validation_errors: Vec<String>,
     #[default(true)] rules_tooltip: bool,
+    #[default]
+    #[into]
+    validation_errors: Vec<&str>,
 
-    #[default] legend: Option<String>,
-    #[default] label: Option<String>,
-    #[default] label_for: Option<String>,
-    #[default] hint: Option<String>,
-    #[default] prefix: Option<String>,
-    #[default] suffix: Option<String>,
+    #[default]
+    #[into]
+    legend: Option<&str>,
+    #[default]
+    #[into]
+    label: Option<&str>,
+    #[default]
+    #[into]
+    label_for: Option<&str>,
+    #[default]
+    #[into]
+    hint: Option<&str>,
+    #[default]
+    #[into]
+    prefix: Option<&str>,
+    #[default]
+    #[into]
+    suffix: Option<&str>,
     #[default] mut attrs: Attributes,
     #[default] mut inner_attrs: Attributes,
     #[default] child: Child<'_>,
@@ -195,21 +209,21 @@ pub async fn input(
     // Length in UTF-8 bytes, using the runtime's built-in `len` on both sides.
     let count = expr!(value.get().len());
     // `raw!` must return runtime values via `cx.hydrate(..)`, and `${v}` is a
-    // runtime string object, so it is converted with `String(..)` first.
+    // runtime &str object, so it is converted with `&str(..)` first.
     let number = expr!({
         let v = value.get();
         raw!(
-            "cx.hydrate(String(${v}).trim() === '' ? NaN : Number(String(${v})))",
+            "cx.hydrate(&str(${v}).trim() === '' ? NaN : Number(&str(${v})))",
             v.trim().parse::<f64>().unwrap_or(f64::NAN)
         )
     });
     let email_ok = expr!({
         let v = value.get();
-        raw!("cx.hydrate(/^[^\\s@]+@[^\\s@]+$/.test(String(${v})))", looks_like_email(&v))
+        raw!("cx.hydrate(/^[^\\s@]+@[^\\s@]+$/.test(&str(${v})))", looks_like_email(&v))
     });
     let url_ok = expr!({
         let v = value.get();
-        raw!("cx.hydrate(/^[a-z][a-z0-9+.-]*:\\/\\/\\S+$/i.test(String(${v})))", looks_like_url(&v))
+        raw!("cx.hydrate(/^[a-z][a-z0-9+.-]*:\\/\\/\\S+$/i.test(&str(${v})))", looks_like_url(&v))
     });
     // The pattern is only evaluated in the browser; the server render treats it as satisfied.
     let pattern_ok = {
@@ -218,7 +232,7 @@ pub async fn input(
             let v = value.get();
             let p = pattern.clone();
             raw!(
-                "cx.hydrate(String(${v}) === '' || String(${p}) === '' || new RegExp('^(?:' + String(${p}) + ')$', 'v').test(String(${v})))",
+                "cx.hydrate(&str(${v}) === '' || &str(${p}) === '' || new RegExp('^(?:' + &str(${p}) + ')$', 'v').test(&str(${v})))",
                 {
                     let _ = (&v, &p);
                     true
@@ -406,7 +420,7 @@ mod tests {
         view! { input(inner_attrs: inner, rules_tooltip: false) }.single().await.unwrap().render(cx)
     }
 
-    async fn render(ty: InputType, inner: Attributes, errors: Vec<String>) -> String {
+    async fn render(ty: InputType, inner: Attributes, errors: Vec<&str>) -> String {
         let cx = &Cx::new();
         view! { input(ty: ty, inner_attrs: inner, validation_errors: errors) }.single().await.unwrap().render(cx)
     }
@@ -578,9 +592,9 @@ mod tests {
         let html = render(InputType::Email, attrs(&[("min", "1")]), vec![]).await;
         assert!(html.contains("cx.hydrate(/"), "{html}");
         let html = render(InputType::Number, attrs(&[("min", "1")]), vec![]).await;
-        assert!(html.contains("cx.hydrate(String("), "{html}");
+        assert!(html.contains("cx.hydrate(&str("), "{html}");
         let html = render(InputType::Text, attrs(&[("pattern", "a")]), vec![]).await;
-        assert!(html.contains("cx.hydrate(String("), "{html}");
+        assert!(html.contains("cx.hydrate(&str("), "{html}");
         assert!(!html.contains("[..."), "{html}");
     }
 

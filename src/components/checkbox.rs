@@ -48,7 +48,9 @@ pub async fn checkbox(
     cx: &Cx,
     #[default] color: CheckboxColor,
     #[default] size: CheckboxSize,
-    #[default] label: Option<String>,
+    #[default]
+    #[into]
+    label: Option<&str>,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
     Ok(view! {

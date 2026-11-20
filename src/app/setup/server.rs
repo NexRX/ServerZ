@@ -91,42 +91,42 @@ pub async fn setup_server(cx: &Cx) -> Result<impl View> {
         >
             <div class="flex flex-1 flex-wrap w-full gap-4 justify-evenly">
                 input(
-                    label: Some("Server Path".into()),
-                    label_for: Some(ServerCreationValidation::ServerPath.name().into()),
+                    label: Some("Server Path"),
+                    label_for: Some(ServerCreationValidation::ServerPath.name()),
                     inner_attrs: ServerCreationValidation::ServerPath.attrs(cx),
                     attrs: attributes!(class="w-full")
                 )
                 input(
-                    label: Some("CPU Cores".into()),
-                    label_for: Some(ServerCreationValidation::CpuCores.name().into()),
+                    label: Some("CPU Cores"),
+                    label_for: Some(ServerCreationValidation::CpuCores.name()),
                     inner_attrs: ServerCreationValidation::CpuCores.attrs(cx),
                     attrs: attributes!(class="w-40")
                 )
                 input(
-                    label: Some("Port".into()),
-                    label_for: Some(ServerCreationValidation::Port.name().into()),
+                    label: Some("Port"),
+                    label_for: Some(ServerCreationValidation::Port.name()),
                     inner_attrs: ServerCreationValidation::Port.attrs(cx),
                     attrs: attributes!(class="w-38")
                 )
                 input(
-                    label: Some("Server FPS Limit".into()),
-                    label_for: Some(ServerCreationValidation::LimitFps.name().into()),
+                    label: Some("Server FPS Limit"),
+                    label_for: Some(ServerCreationValidation::LimitFps.name()),
                     inner_attrs: ServerCreationValidation::LimitFps.attrs(cx),
                     attrs: attributes!(class="w-38")
                 )
                 fieldset(
-                    legend: Some("Enabled Logging".into()),
+                    legend: Some("Enabled Logging"),
                     class: "border border-base-300 rounded-box p-4",
                     checkbox(
-                        label: Some("General (Do)".into()),
+                        label: "General (Do)",
                         attrs: ServerCreationValidation::DoLogs.attrs(cx)
                     )
                     checkbox(
-                        label: Some("Admin".into()),
+                        label: "Admin",
                         attrs: ServerCreationValidation::AdminLogs.attrs(cx)
                     )
                     checkbox(
-                        label: Some("Network".into()),
+                        label: "Network",
                         attrs: ServerCreationValidation::NetLogs.attrs(cx)
                     )
                 )

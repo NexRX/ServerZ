@@ -18,6 +18,7 @@ pub mod countdown;
 pub mod diff;
 pub mod divider;
 pub mod dock;
+pub mod download;
 pub mod drawer;
 pub mod dropdown;
 pub mod fab;
@@ -97,6 +98,7 @@ pub mod prelude {
     pub use super::diff::*;
     pub use super::divider::*;
     pub use super::dock::*;
+    pub use super::download::*;
     pub use super::drawer::*;
     pub use super::dropdown::*;
     pub use super::fab::*;

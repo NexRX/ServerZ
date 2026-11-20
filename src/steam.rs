@@ -29,7 +29,6 @@ impl Singleton for Steam {
 }
 
 impl Guard for Steam {
-    const GUARD_NAME: &str = "Steam";
     const REDIRECT_AVAILABLE: &str = "/setup/done";
     const REDIRECT_UNAVAILABLE: &str = "/setup/steam";
 

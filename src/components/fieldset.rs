@@ -7,7 +7,12 @@ use topcoat::{
 #[component]
 pub async fn fieldset(
     cx: &Cx,
-    #[default] legend: Option<String>,
+    #[default]
+    #[into]
+    legend: Option<&str>,
+    #[default]
+    #[into]
+    label: Option<&str>,
     #[default] class: &'static str,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
@@ -18,6 +23,9 @@ pub async fn fieldset(
                 fieldset_legend((legend))
             }
             (child)
+            if let Some(label) = label {
+                <p class="label">(label)</p>
+            }
         </fieldset>
     })
 }

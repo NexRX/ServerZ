@@ -35,7 +35,6 @@ pub enum Role {
 }
 
 impl Guard for User {
-    const GUARD_NAME: &str = "User";
     const REDIRECT_UNAVAILABLE: &str = "/login";
 
     async fn fetch_available(cx: &Cx) -> anyhow::Result<Self> {
@@ -47,7 +46,6 @@ impl Guard for User {
 pub struct Owner(pub User);
 
 impl Guard for Owner {
-    const GUARD_NAME: &str = "Owner";
     const REDIRECT_UNAVAILABLE: &str = "/setup/owner";
 
     async fn fetch_available(cx: &Cx) -> anyhow::Result<Self> {

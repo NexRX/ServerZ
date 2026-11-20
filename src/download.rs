@@ -9,6 +9,7 @@ use std::{
 };
 use stream_download::{StreamDownload, storage::temp::TempStorageProvider};
 use tempfile::NamedTempFile;
+use tokio::sync::broadcast::error::{RecvError, TryRecvError};
 use tokio::{
     fs::create_dir_all,
     sync::broadcast::{self, Receiver, Sender},
@@ -27,7 +28,7 @@ pub struct Downloader {
     #[builder(setter(into))]
     target: String,
     #[builder(setter(into))]
-    name: String,
+    pub name: String,
     #[builder(setter(into))]
     total_download_bytes: u128,
     #[builder(default, setter(strip_option, into))]
@@ -61,6 +62,10 @@ struct Publisher {
 
 /// Methods
 impl Downloader {
+    pub fn has_extract_step(&self) -> bool {
+        self.filename_in_archive.is_some()
+    }
+
     pub fn subscribe(&mut self) -> Receiver<DownloadEvent> {
         self.eventbus.get_or_insert_with(|| broadcast::channel(EVENT_BUFFER).0).subscribe()
     }
@@ -69,7 +74,7 @@ impl Downloader {
         tokio::spawn(self.start());
     }
 
-    #[instrument(level = "info", name = "Download::start", skip_all, ret, err)]
+    #[instrument(level = "info", name = "Download::start", skip_all, fields(name = %self.name, url = %self.url), ret, err)]
     pub async fn start(self) -> anyhow::Result<File> {
         info!("Starting");
         match self.filename_in_archive.as_ref() {
@@ -112,6 +117,36 @@ impl Downloader {
     }
 }
 
+pub trait ReceiveLatest {
+    fn rceiver(&mut self) -> &mut Receiver<crate::download::DownloadEvent>;
+
+    async fn recv_latest(&mut self) -> Option<crate::download::DownloadEvent> {
+        let receiver = self.rceiver();
+
+        let mut latest = loop {
+            match receiver.recv().await {
+                Ok(event) => break event,
+                Err(RecvError::Lagged(_)) => continue,
+                Err(RecvError::Closed) => return None,
+            }
+        };
+
+        loop {
+            match receiver.try_recv() {
+                Ok(event) => latest = event,
+                Err(TryRecvError::Lagged(_)) => continue,
+                Err(TryRecvError::Empty | TryRecvError::Closed) => return Some(latest),
+            }
+        }
+    }
+}
+
+impl ReceiveLatest for Receiver<DownloadEvent> {
+    fn rceiver(&mut self) -> &mut Receiver<crate::download::DownloadEvent> {
+        self
+    }
+}
+
 #[instrument(level = "debug", skip(pub_progress), ret, err)]
 async fn extract(
     mut archive: ZipArchive<NamedTempFile>,
@@ -136,13 +171,14 @@ async fn extract(
         };
 
         let total = file.size() as u128;
-        let current: u128 = 0;
+        let mut current: u128 = 0;
 
         let mut tmp_file = NamedTempFile::new_in(TMP_FOLDER)?;
 
         loop {
             let mut buf = [0u8; 1024];
             let bytes_read = file.read(&mut buf)?;
+            current += bytes_read as u128;
 
             if let Some(p) = pub_progress.as_mut() {
                 let event = match bytes_read {
