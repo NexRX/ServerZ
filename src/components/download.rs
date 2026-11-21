@@ -7,6 +7,7 @@ use tokio::sync::broadcast::{
     Receiver,
     error::{RecvError, TryRecvError},
 };
+use topcoat::runtime::signal;
 use topcoat::{
     Result,
     context::Cx,
@@ -34,6 +35,8 @@ pub async fn download_progress(
     #[default] show_name: bool,
     #[default] form_marker: Option<&str>,
 ) -> Result<impl View> {
+    let form_warning = signal(cx, || false);
+
     Ok(view! {
         (live! {
             let mut subscriber = downloader.subscribe();
@@ -56,7 +59,8 @@ pub async fn download_progress(
                     fieldset: fieldset,
                     start_button: start_button,
                     show_name: show_name,
-                    form_marker: form_marker
+                    form_marker: form_marker,
+                    form_warning: form_warning.clone()
                 )
             }?;
 
@@ -86,7 +90,8 @@ pub async fn download_progress(
                                 fieldset: fieldset,
                                 start_button: start_button,
                                 show_name: show_name,
-                                form_marker: form_marker
+                                form_marker: form_marker,
+                                form_warning: form_warning.clone()
                             )
                         }?,
                         crate::download::DownloadEvent::Extracting { current, total, .. } => emit! {
@@ -101,7 +106,8 @@ pub async fn download_progress(
                                 fieldset: fieldset,
                                 start_button: start_button,
                                 show_name: show_name,
-                                form_marker: form_marker
+                                form_marker: form_marker,
+                                form_warning: form_warning.clone()
                             )
                         }?,
                         crate::download::DownloadEvent::Completed { total, .. } => break Ok(
@@ -117,7 +123,8 @@ pub async fn download_progress(
                                     fieldset: fieldset,
                                     start_button: start_button,
                                     show_name: show_name,
-                                    form_marker: form_marker
+                                    form_marker: form_marker,
+                                    form_warning: form_warning.clone()
                                 )
                             }?,
                         ),
@@ -142,6 +149,7 @@ async fn download_progress_view(
     start_button: DownloadProgressBtn,
     show_name: bool,
     form_marker: Option<&str>,
+    form_warning: Signal<bool>,
 ) -> Result<impl View> {
     Ok(view! {
         if let Some((legend, label)) = fieldset {
@@ -160,7 +168,8 @@ async fn download_progress_view(
                     completed: completed,
                     start_button: start_button,
                     show_name: show_name,
-                    form_marker: form_marker
+                    form_marker: form_marker,
+                    form_warning: form_warning.clone()
                 )
             )
         } else {
@@ -174,7 +183,8 @@ async fn download_progress_view(
                 completed: completed,
                 start_button: start_button,
                 show_name: show_name,
-                form_marker: form_marker
+                form_marker: form_marker,
+                form_warning: form_warning
             )
         }
     })
@@ -193,6 +203,7 @@ async fn download_progress_content(
     start_button: DownloadProgressBtn,
     show_name: bool,
     form_marker: Option<&str>,
+    form_warning: Signal<bool>,
 ) -> Result<impl View> {
     Ok(view! {
         progress_bars(
@@ -211,8 +222,10 @@ async fn download_progress_content(
         ) {
             button(
                 attrs: attributes! {
+                    type="button"
                     class=(class!("mt-2"))
                     @click=$(async |_e: Event| {
+                        form_warning.set(false);
                         start.set(true);
                     })
                     if start.get() || start_button.is_done() {
@@ -226,6 +239,7 @@ async fn download_progress_content(
                             type="checkbox"
                             class="checkbox checkbox-success checkbox-sm"
                             checked="checked"
+                            value="true"
                             name=(form_marker)
                         />
                     } else {
@@ -237,13 +251,20 @@ async fn download_progress_content(
                         <input
                             type="checkbox"
                             class="invisible"
-                            disabled="true"
                             name=(form_marker)
                             required="true"
+                            @invalid=$(async |_e: Event| {
+                                form_warning.set(true);
+                            })
                         />
                     }
                 }
             )
+            if form_warning.get() {
+                <p class="text-error text-sm" role="alert">
+                    "Download before continuing"
+                </p>
+            }
         }
     })
 }

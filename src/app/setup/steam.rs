@@ -25,12 +25,13 @@ pub struct SteamDepot {
     pub steam_username: String,
     #[garde(dive)]
     pub steam_password: Secret,
+    #[serde(default)]
     #[garde(custom(is_true))]
     depot_downloaded: bool,
 }
 
 pub fn is_true(v: &bool, _: &&&()) -> garde::Result {
-    if *v {
+    if !*v {
         return Err(garde::Error::new("depot must be downloaded"));
     }
     Ok(())
@@ -52,6 +53,7 @@ pub async fn setup_steam(cx: &Cx) -> Result<impl View> {
     } else {
         DownloadProgressBtn::Enabled
     };
+    let download_warning = signal(cx, || false);
 
     Ok(view! {
         <form
@@ -68,8 +70,14 @@ pub async fn setup_steam(cx: &Cx) -> Result<impl View> {
                         "This tool is required for downloading items from steam",
                     ),
                 ),
-                start_button: btn_state
+                start_button: btn_state,
+                form_marker: Some("depot_downloaded")
             )
+            if download_warning.get() {
+                <p class="text-error text-sm" role="alert">
+                    "Download the required Depot before continuing."
+                </p>
+            }
             input(
                 label: Some("Steam Username"),
                 label_for: Some(SteamDepotValidation::SteamUsername.name()),
