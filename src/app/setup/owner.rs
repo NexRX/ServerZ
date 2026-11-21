@@ -43,15 +43,15 @@ pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
             class="flex flex-col flex-1 items-center h-full"
         >
             input(
-                label: Some("Username".into()),
-                label_for: Some(LoginValidation::Username.name().into()),
+                label: Some("Username"),
+                label_for: Some(LoginValidation::Username.name()),
                 inner_attrs: LoginValidation::Username.attrs(cx),
                 attrs: attributes!(class="w-72")
             )
             input(
                 ty: InputType::Password,
-                label: Some("Password".into()),
-                label_for: Some(LoginValidation::Password.name().into()),
+                label: Some("Password"),
+                label_for: Some(LoginValidation::Password.name()),
                 inner_attrs: LoginValidation::Password.attrs(cx),
                 attrs: attributes!(class="w-72")
             )
