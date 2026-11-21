@@ -258,7 +258,7 @@ pub async fn progress_bars(
         <div class=(PER_WRAPPER_CLASS)>
             <div>
                 (&name)
-                if bytes {
+                if bytes && current != 100 && total != 100 {
                     <span class="text-xs font-mono text-base-content/66 ml-auto">
                         " ("
                         (done_txt)
@@ -294,7 +294,11 @@ async fn progress_bar(cx: &Cx, label: &str, value: u128, max: u128, inline: bool
             >
                 <label class="whitespace-pre">(format!("{label:<9}"))</label>
                 if inline {
-                    progress(value: value, max: max)
+                    progress(
+                        value: value,
+                        max: max,
+                        attrs: attributes! { class="progress-snap" }
+                    )
                 }
                 <label class="whitespace-pre">
                     if value == 0 {
@@ -305,7 +309,11 @@ async fn progress_bar(cx: &Cx, label: &str, value: u128, max: u128, inline: bool
                 </label>
             </div>
             if !inline {
-                progress(value: value, max: max)
+                progress(
+                    value: value,
+                    max: max,
+                    attrs: attributes! { class="progress-snap" }
+                )
             }
         </div>
     })
