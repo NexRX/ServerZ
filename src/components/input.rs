@@ -579,7 +579,7 @@ mod tests {
 
     #[tokio::test]
     async fn server_errors_render_without_rules() {
-        let html = render(InputType::Text, Attributes::new(), vec!["Username taken".into()]).await;
+        let html = render(InputType::Text, Attributes::new(), vec!["Username taken"]).await;
         assert!(html.contains("Username taken"));
         assert!(html.contains("input-error"));
         assert!(html.contains("validator"));
