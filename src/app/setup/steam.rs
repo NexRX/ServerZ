@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use server_z_macros::FormValidation;
 use topcoat::router::content::Form;
 use topcoat::router::error::SeeOther;
-use topcoat::router::route;
+use topcoat::router::{Route, route};
 use topcoat::runtime::signal;
 use topcoat::view::attributes;
 use topcoat::{
@@ -25,11 +25,21 @@ pub struct SteamDepot {
     pub steam_username: String,
     #[garde(dive)]
     pub steam_password: Secret,
+    #[garde(custom(is_true))]
+    depot_downloaded: bool,
+}
+
+pub fn is_true(v: &bool, _: &&&()) -> garde::Result {
+    if *v {
+        return Err(garde::Error::new("depot must be downloaded"));
+    }
+    Ok(())
 }
 
 #[instrument(level = "info", skip(cx), ret, err)]
 #[route(POST "/api/setup/steam")]
 async fn create_steam(cx: &Cx, Form(input): Form<SteamDepot>) -> Result<SeeOther> {
+    input.validate()?;
     todo!()
 }
 
@@ -44,22 +54,22 @@ pub async fn setup_steam(cx: &Cx) -> Result<impl View> {
     };
 
     Ok(view! {
-        download_progress(
-            downloader: Depot::downloader(),
-            start: signal(cx, || false),
-            fieldset: Some(
-                (
-                    "Required Download: Depot",
-                    "This tool is required for downloading items from steam",
-                ),
-            ),
-            start_button: btn_state
-        )
         <form
             method="POST"
-            action="/api/setup/create-owner"
-            class="flex flex-col flex-1 items-center h-full"
+            action=(create_steam.path().to_string())
+            class="flex flex-col flex-1 items-center h-full gap-4"
         >
+            download_progress(
+                downloader: Depot::downloader(),
+                start: signal(cx, || false),
+                fieldset: Some(
+                    (
+                        "Required Download: Depot",
+                        "This tool is required for downloading items from steam",
+                    ),
+                ),
+                start_button: btn_state
+            )
             input(
                 label: Some("Steam Username"),
                 label_for: Some(SteamDepotValidation::SteamUsername.name()),

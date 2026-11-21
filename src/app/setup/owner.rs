@@ -5,6 +5,7 @@ use crate::db::db;
 use crate::guard::Guard as _;
 use crate::user::{Owner, Role, Session, User};
 use garde::Validate;
+use topcoat::router::Route as _;
 use topcoat::router::error::{SeeOther, see_other};
 use topcoat::session;
 use topcoat::{
@@ -39,7 +40,7 @@ pub async fn setup_owner(cx: &Cx) -> Result<impl View> {
     Ok(view! {
         <form
             method="POST"
-            action="/api/setup/create-owner"
+            action=(create_owner.path().to_string())
             class="flex flex-col flex-1 items-center h-full"
         >
             input(

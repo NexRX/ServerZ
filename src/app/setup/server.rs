@@ -14,6 +14,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use server_z_macros::FormValidation;
 use std::fs;
+use topcoat::router::Route as _;
 use topcoat::router::error::{SeeOther, see_other};
 use topcoat::{
     Result,
@@ -53,7 +54,7 @@ struct ServerCreation {
 
 #[instrument(level = "info", skip(cx), ret, err)]
 #[route(POST "/api/setup/create-server")]
-async fn create_owner(cx: &Cx, Form(input): Form<ServerCreation>) -> Result<SeeOther> {
+async fn create_server(cx: &Cx, Form(input): Form<ServerCreation>) -> Result<SeeOther> {
     Server::ensure_unavailable(cx).await?;
     input.validate()?;
 
@@ -86,7 +87,7 @@ pub async fn setup_server(cx: &Cx) -> Result<impl View> {
     Ok(view! {
         <form
             method="POST"
-            action="/api/setup/create-server"
+            action=(create_server.path().to_string())
             class="flex flex-col flex-1 items-center h-full"
         >
             <div class="flex flex-1 flex-wrap w-full gap-4 justify-evenly">

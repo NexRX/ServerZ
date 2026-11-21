@@ -5,3 +5,4 @@
 .cargo/build-assets/tailwind_deps/
 data/
 ServerZ-macros/target/
+.DS_Store

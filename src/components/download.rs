@@ -32,6 +32,7 @@ pub async fn download_progress(
     #[default] fieldset: Option<(&str, &str)>,
     #[default] start_button: DownloadProgressBtn,
     #[default] show_name: bool,
+    #[default] form_marker: Option<&str>,
 ) -> Result<impl View> {
     Ok(view! {
         (live! {
@@ -54,7 +55,8 @@ pub async fn download_progress(
                     completed: false,
                     fieldset: fieldset,
                     start_button: start_button,
-                    show_name: show_name
+                    show_name: show_name,
+                    form_marker: form_marker
                 )
             }?;
 
@@ -83,7 +85,8 @@ pub async fn download_progress(
                                 completed: false,
                                 fieldset: fieldset,
                                 start_button: start_button,
-                                show_name: show_name
+                                show_name: show_name,
+                                form_marker: form_marker
                             )
                         }?,
                         crate::download::DownloadEvent::Extracting { current, total, .. } => emit! {
@@ -97,7 +100,8 @@ pub async fn download_progress(
                                 completed: false,
                                 fieldset: fieldset,
                                 start_button: start_button,
-                                show_name: show_name
+                                show_name: show_name,
+                                form_marker: form_marker
                             )
                         }?,
                         crate::download::DownloadEvent::Completed { total, .. } => break Ok(
@@ -112,7 +116,8 @@ pub async fn download_progress(
                                     completed: true,
                                     fieldset: fieldset,
                                     start_button: start_button,
-                                    show_name: show_name
+                                    show_name: show_name,
+                                    form_marker: form_marker
                                 )
                             }?,
                         ),
@@ -136,6 +141,7 @@ async fn download_progress_view(
     fieldset: Option<(&str, &str)>,
     start_button: DownloadProgressBtn,
     show_name: bool,
+    form_marker: Option<&str>,
 ) -> Result<impl View> {
     Ok(view! {
         if let Some((legend, label)) = fieldset {
@@ -143,6 +149,7 @@ async fn download_progress_view(
                 legend: legend,
                 label: label,
                 bg_border: true,
+                class: "w-full",
                 download_progress_content(
                     name: name,
                     current: current,
@@ -152,7 +159,8 @@ async fn download_progress_view(
                     start: start.clone(),
                     completed: completed,
                     start_button: start_button,
-                    show_name: show_name
+                    show_name: show_name,
+                    form_marker: form_marker
                 )
             )
         } else {
@@ -165,7 +173,8 @@ async fn download_progress_view(
                 start: start,
                 completed: completed,
                 start_button: start_button,
-                show_name: show_name
+                show_name: show_name,
+                form_marker: form_marker
             )
         }
     })
@@ -183,6 +192,7 @@ async fn download_progress_content(
     completed: bool,
     start_button: DownloadProgressBtn,
     show_name: bool,
+    form_marker: Option<&str>,
 ) -> Result<impl View> {
     Ok(view! {
         progress_bars(
@@ -210,9 +220,28 @@ async fn download_progress_content(
                     }
                 },
                 if completed || start_button.is_done() {
-                    "Done ✅"
+                    "Done "
+                    if let Some(form_marker) = form_marker {
+                        <input
+                            type="checkbox"
+                            class="checkbox checkbox-success checkbox-sm"
+                            checked="checked"
+                            name=(form_marker)
+                        />
+                    } else {
+                        "✅"
+                    }
                 } else {
                     "Start"
+                    if let Some(form_marker) = form_marker {
+                        <input
+                            type="checkbox"
+                            class="invisible"
+                            disabled="true"
+                            name=(form_marker)
+                            required="true"
+                        />
+                    }
                 }
             )
         }
