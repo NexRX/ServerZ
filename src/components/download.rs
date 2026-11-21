@@ -31,6 +31,7 @@ pub async fn download_progress(
     start: Signal<bool>,
     #[default] fieldset: Option<(&str, &str)>,
     #[default] start_button: DownloadProgressBtn,
+    #[default] show_name: bool,
 ) -> Result<impl View> {
     Ok(view! {
         (live! {
@@ -52,7 +53,8 @@ pub async fn download_progress(
                     start: start.clone(),
                     completed: false,
                     fieldset: fieldset,
-                    start_button: start_button
+                    start_button: start_button,
+                    show_name: show_name
                 )
             }?;
 
@@ -80,7 +82,8 @@ pub async fn download_progress(
                                 start: start.clone(),
                                 completed: false,
                                 fieldset: fieldset,
-                                start_button: start_button
+                                start_button: start_button,
+                                show_name: show_name
                             )
                         }?,
                         crate::download::DownloadEvent::Extracting { current, total, .. } => emit! {
@@ -93,7 +96,8 @@ pub async fn download_progress(
                                 start: start.clone(),
                                 completed: false,
                                 fieldset: fieldset,
-                                start_button: start_button
+                                start_button: start_button,
+                                show_name: show_name
                             )
                         }?,
                         crate::download::DownloadEvent::Completed { total, .. } => break Ok(
@@ -107,7 +111,8 @@ pub async fn download_progress(
                                     start: start.clone(),
                                     completed: true,
                                     fieldset: fieldset,
-                                    start_button: start_button
+                                    start_button: start_button,
+                                    show_name: show_name
                                 )
                             }?,
                         ),
@@ -130,6 +135,7 @@ async fn download_progress_view(
     completed: bool,
     fieldset: Option<(&str, &str)>,
     start_button: DownloadProgressBtn,
+    show_name: bool,
 ) -> Result<impl View> {
     Ok(view! {
         if let Some((legend, label)) = fieldset {
@@ -145,7 +151,8 @@ async fn download_progress_view(
                     is_extract: is_extract,
                     start: start.clone(),
                     completed: completed,
-                    start_button: start_button
+                    start_button: start_button,
+                    show_name: show_name
                 )
             )
         } else {
@@ -157,7 +164,8 @@ async fn download_progress_view(
                 is_extract: is_extract,
                 start: start,
                 completed: completed,
-                start_button: start_button
+                start_button: start_button,
+                show_name: show_name
             )
         }
     })
@@ -174,6 +182,7 @@ async fn download_progress_content(
     start: Signal<bool>,
     completed: bool,
     start_button: DownloadProgressBtn,
+    show_name: bool,
 ) -> Result<impl View> {
     Ok(view! {
         progress_bars(
@@ -183,7 +192,8 @@ async fn download_progress_content(
             has_extract: has_extract,
             is_extract: is_extract || (start_button.is_done() && has_extract),
             inline: true,
-            bytes: true
+            bytes: true,
+            show_name: show_name
         )
         if matches!(
             start_button,
@@ -244,6 +254,7 @@ pub async fn progress_bars(
     has_extract: bool,
     inline: bool,
     bytes: bool,
+    show_name: bool,
 ) -> Result<impl View> {
     let current_dl = if is_extract { 100 } else { current };
     let current_ex = if is_extract { current } else { 0 };
@@ -257,7 +268,9 @@ pub async fn progress_bars(
     Ok(view! {
         <div class=(PER_WRAPPER_CLASS)>
             <div>
-                (&name)
+                if show_name {
+                    (&name)
+                }
                 if bytes && current != 100 && total != 100 {
                     <span class="text-xs font-mono text-base-content/66 ml-auto">
                         " ("
