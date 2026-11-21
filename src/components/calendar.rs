@@ -7,8 +7,12 @@ use topcoat::{
 #[component]
 pub async fn calendar(
     cx: &Cx,
-    #[default] min: String,
-    #[default] max: String,
+    #[default]
+    #[into]
+    min: &str,
+    #[default]
+    #[into]
+    max: &str,
     #[default] mut attrs: Attributes,
 ) -> Result<impl View> {
     Ok(view! {
@@ -40,7 +44,7 @@ pub async fn calendar_cally(
 #[component]
 pub async fn calendar_cally_with_output(
     cx: &Cx,
-    output_id: String,
+    #[into] output_id: &str,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

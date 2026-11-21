@@ -20,7 +20,7 @@ pub async fn breadcrumbs(cx: &Cx, #[default] mut attrs: Attributes, #[default] c
 #[component]
 pub async fn breadcrumb_item(
     cx: &Cx,
-    href: String,
+    #[into] href: &str,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

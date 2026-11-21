@@ -138,7 +138,7 @@ async fn step_display(cx: &Cx, current_step: SetupStep) -> Result<impl View> {
     Ok(view! {
         tooltip(
             alignment: TooltipAlignment::Start,
-            text: "Setup Progres".to_string(),
+            text: "Setup Progres",
             <div class="flex flex-col items-center">
                 steps(
                     <div class="contents">

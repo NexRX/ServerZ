@@ -96,7 +96,7 @@ pub async fn showcase(cx: &Cx) -> Result<impl View> {
                             button(attrs: attributes! { class="join-item" }, "Next")
                         </div>
                         breadcrumbs(
-                            breadcrumb_item(href: "/".to_string(), "Home")
+                            breadcrumb_item(href: "/", "Home")
                             <li>"Showcase"</li>
                         )
                     )
@@ -108,7 +108,7 @@ pub async fn showcase(cx: &Cx) -> Result<impl View> {
                     card_header(card_title("Modal and OTP"))
                     card_content(
                         modal(
-                            id: "showcase-modal".to_string(),
+                            id: "showcase-modal",
                             <h3 class="font-bold text-lg">"Reusable modal"</h3>
                             <p class="py-4">
                                 "Modal content is supplied by the caller."
@@ -128,15 +128,15 @@ pub async fn showcase(cx: &Cx) -> Result<impl View> {
                             )
                         )
                         accordion_group(
-                            name: "showcase-accordion".to_string(),
+                            name: "showcase-accordion",
                             accordion_item(
-                                title: "What is ServerZ?".to_string(),
-                                group: "showcase-accordion".to_string(),
+                                title: "What is ServerZ?",
+                                group: "showcase-accordion",
                                 "A Rust component library application."
                             )
                             accordion_item(
-                                title: "Does it compose?".to_string(),
-                                group: "showcase-accordion".to_string(),
+                                title: "Does it compose?",
+                                group: "showcase-accordion",
                                 "Every component accepts caller content and attributes."
                             )
                         )
@@ -198,12 +198,9 @@ pub async fn showcase(cx: &Cx) -> Result<impl View> {
                     card_header(card_title("Navigation components"))
                     card_content(
                         drawer(
-                            drawer_toggle(id: "showcase-drawer".to_string())
+                            drawer_toggle(id: "showcase-drawer")
                             drawer_content(
-                                drawer_button(
-                                    for_id: "showcase-drawer".to_string(),
-                                    "Open drawer"
-                                )
+                                drawer_button(for_id: "showcase-drawer", "Open drawer")
                             )
                             drawer_side(
                                 <nav class="menu min-h-full w-64 bg-base-200 p-4">
@@ -244,7 +241,7 @@ pub async fn showcase(cx: &Cx) -> Result<impl View> {
                         )
                         fab(<button class="btn btn-primary btn-circle">"+"</button>)
                         tooltip(
-                            text: "Helpful information".to_string(),
+                            text: "Helpful information",
                             <button class="btn btn-ghost">"Hover me"</button>
                         )
                         list(<li class="list-row">"Reusable list item"</li>)
@@ -271,8 +268,8 @@ pub async fn showcase(cx: &Cx) -> Result<impl View> {
                     aura(attrs: attributes! { class="aura-rainbow p-4" }, "Aura")
                     avatar(
                         avatar_image(
-                            src: "https://picsum.photos/64/64".to_string(),
-                            alt: "Sample avatar".to_string()
+                            src: "https://picsum.photos/64/64",
+                            alt: "Sample avatar"
                         )
                     )
                     join(

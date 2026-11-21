@@ -24,7 +24,9 @@ pub enum ModalPlacement {
 #[component]
 pub async fn modal(
     cx: &Cx,
-    #[default] id: String,
+    #[default]
+    #[into]
+    id: &str,
     #[default] placement: ModalPlacement,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,

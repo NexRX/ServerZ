@@ -56,7 +56,7 @@ pub enum TooltipAlignment {
 #[component]
 pub async fn tooltip(
     cx: &Cx,
-    text: String,
+    #[into] text: &str,
     #[default] color: TooltipColor,
     #[default] placement: TooltipPlacement,
     #[default] alignment: TooltipAlignment,

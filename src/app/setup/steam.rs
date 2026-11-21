@@ -1,37 +1,35 @@
 use crate::components::prelude::*;
 use crate::guard::Guard;
 use crate::steam::{Depot, Steam};
-use topcoat::runtime::{Event, signal};
-use topcoat::view::{emit, live};
+use topcoat::runtime::signal;
 use topcoat::{
     Result,
     context::Cx,
     router::page,
-    view::{View, attributes, view},
+    view::{View, view},
 };
 
 #[page]
 pub async fn setup_steam(cx: &Cx) -> Result<impl View> {
     Steam::ensure_unavailable(cx).await?;
 
-    let start = signal(cx, || false);
+    let btn_state = if Depot::is_downloaded().await.unwrap_or_default() {
+        DownloadProgressBtn::Done
+    } else {
+        DownloadProgressBtn::Enabled
+    };
 
     Ok(view! {
-        fieldset(
-            legend: Some("Required Download: Depot"),
-            label: Some("This tool is required to download items from steam"),
-            download_progress(downloader: Depot::downloader(), start: start.clone())
-            button(
-                attrs: attributes! {
-                    @click=$(async |_e: Event| {
-                        start.set(true);
-                    })
-                    if start.get() {
-                        disabled="true"
-                    }
-                },
-                "Start"
-            )
+        download_progress(
+            downloader: Depot::downloader(),
+            start: signal(cx, || false),
+            fieldset: Some(
+                (
+                    "Required Download: Depot",
+                    "This tool is required for downloading items from steam",
+                ),
+            ),
+            start_button: btn_state
         )
     })
 }

@@ -46,7 +46,7 @@ pub enum RadioSize {
 #[component]
 pub async fn radio(
     cx: &Cx,
-    name: String,
+    #[into] name: &str,
     color: RadioColor,
     size: RadioSize,
     #[default] mut attrs: Attributes,

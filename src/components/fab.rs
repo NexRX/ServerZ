@@ -20,7 +20,9 @@ pub async fn fab(
 #[component]
 pub async fn fab_action(
     cx: &Cx,
-    #[default] label: String,
+    #[default]
+    #[into]
+    label: &str,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -35,7 +37,9 @@ pub async fn fab_action(
 #[component]
 pub async fn fab_tooltip(
     cx: &Cx,
-    #[default] label: String,
+    #[default]
+    #[into]
+    label: &str,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

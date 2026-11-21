@@ -14,7 +14,9 @@ pub async fn mockup_code(cx: &Cx, #[default] mut attrs: Attributes, #[default] c
 #[component]
 pub async fn mockup_code_line(
     cx: &Cx,
-    #[default] prefix: String,
+    #[default]
+    #[into]
+    prefix: &str,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {

@@ -13,7 +13,7 @@ pub async fn accordion(cx: &Cx, #[default] mut attrs: Attributes, #[default] chi
 #[component]
 pub async fn accordion_group(
     cx: &Cx,
-    name: String,
+    #[into] name: &str,
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
@@ -31,8 +31,8 @@ pub async fn accordion_group(
 #[component]
 pub async fn accordion_item(
     cx: &Cx,
-    title: String,
-    group: String,
+    #[into] title: &str,
+    #[into] group: &str,
     #[default] open: bool,
     #[default] plus: bool,
     #[default] mut attrs: Attributes,

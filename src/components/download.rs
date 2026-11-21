@@ -1,6 +1,8 @@
+use crate::components::{button::button, fieldset::fieldset};
 use crate::download::Downloader;
 use crate::tw;
 use crate::{components::progress::*, download::ReceiveLatest as _};
+use derive_more::IsVariant;
 use tokio::sync::broadcast::{
     Receiver,
     error::{RecvError, TryRecvError},
@@ -8,14 +10,28 @@ use tokio::sync::broadcast::{
 use topcoat::{
     Result,
     context::Cx,
-    runtime::{Signal, connected},
-    view::{Attributes, Child, View, class, component, emit, live, view},
+    runtime::{Event, Signal, connected},
+    view::{Attributes, Child, View, attributes, class, component, emit, live, view},
 };
 
 const PER_WRAPPER_CLASS: &str = tw!("flex flex-col");
 
+#[derive(Debug, Copy, Clone, Default, IsVariant)]
+pub enum DownloadProgressBtn {
+    Enabled,
+    Done,
+    #[default]
+    None,
+}
+
 #[component]
-pub async fn download_progress(cx: &Cx, mut downloader: Downloader, start: Signal<bool>) -> Result<impl View> {
+pub async fn download_progress(
+    cx: &Cx,
+    mut downloader: Downloader,
+    start: Signal<bool>,
+    #[default] fieldset: Option<(&str, &str)>,
+    #[default] start_button: DownloadProgressBtn,
+) -> Result<impl View> {
     Ok(view! {
         (live! {
             let mut subscriber = downloader.subscribe();
@@ -27,14 +43,16 @@ pub async fn download_progress(cx: &Cx, mut downloader: Downloader, start: Signa
             }
 
             let initial = emit! {
-                progress_wrapper(
-                    name: (&name),
+                download_progress_view(
+                    name: &name,
                     current: 0,
                     total: 0,
                     has_extract: has_extract,
                     is_extract: false,
-                    inline: true,
-                    bytes: true
+                    start: start.clone(),
+                    completed: false,
+                    fieldset: fieldset,
+                    start_button: start_button
                 )
             }?;
 
@@ -53,37 +71,43 @@ pub async fn download_progress(cx: &Cx, mut downloader: Downloader, start: Signa
                             total,
                             ..
                         } => emit! {
-                            progress_wrapper(
+                            download_progress_view(
                                 name: &name,
                                 current: current,
                                 total: total,
                                 has_extract: has_extract,
                                 is_extract: false,
-                                inline: true,
-                                bytes: true
+                                start: start.clone(),
+                                completed: false,
+                                fieldset: fieldset,
+                                start_button: start_button
                             )
                         }?,
                         crate::download::DownloadEvent::Extracting { current, total, .. } => emit! {
-                            progress_wrapper(
+                            download_progress_view(
                                 name: &name,
                                 current: current,
                                 total: total,
                                 has_extract: has_extract,
                                 is_extract: true,
-                                inline: true,
-                                bytes: true
+                                start: start.clone(),
+                                completed: false,
+                                fieldset: fieldset,
+                                start_button: start_button
                             )
                         }?,
                         crate::download::DownloadEvent::Completed { total, .. } => break Ok(
                             emit! {
-                                progress_wrapper(
+                                download_progress_view(
                                     name: &name,
                                     current: total,
                                     total: total,
                                     has_extract: has_extract,
                                     is_extract: has_extract,
-                                    inline: true,
-                                    bytes: true
+                                    start: start.clone(),
+                                    completed: true,
+                                    fieldset: fieldset,
+                                    start_button: start_button
                                 )
                             }?,
                         ),
@@ -94,17 +118,106 @@ pub async fn download_progress(cx: &Cx, mut downloader: Downloader, start: Signa
     })
 }
 
+#[component]
+async fn download_progress_view(
+    cx: &Cx,
+    name: &str,
+    current: u128,
+    total: u128,
+    has_extract: bool,
+    is_extract: bool,
+    start: Signal<bool>,
+    completed: bool,
+    fieldset: Option<(&str, &str)>,
+    start_button: DownloadProgressBtn,
+) -> Result<impl View> {
+    Ok(view! {
+        if let Some((legend, label)) = fieldset {
+            fieldset(
+                legend: legend,
+                label: label,
+                bg_border: true,
+                download_progress_content(
+                    name: name,
+                    current: current,
+                    total: total,
+                    has_extract: has_extract,
+                    is_extract: is_extract,
+                    start: start.clone(),
+                    completed: completed,
+                    start_button: start_button
+                )
+            )
+        } else {
+            download_progress_content(
+                name: name,
+                current: current,
+                total: total,
+                has_extract: has_extract,
+                is_extract: is_extract,
+                start: start,
+                completed: completed,
+                start_button: start_button
+            )
+        }
+    })
+}
+
+#[component]
+async fn download_progress_content(
+    cx: &Cx,
+    name: &str,
+    current: u128,
+    total: u128,
+    has_extract: bool,
+    is_extract: bool,
+    start: Signal<bool>,
+    completed: bool,
+    start_button: DownloadProgressBtn,
+) -> Result<impl View> {
+    Ok(view! {
+        progress_bars(
+            name: name,
+            current: if start_button.is_done() { 100 } else { current },
+            total: if start_button.is_done() { 100 } else { total },
+            has_extract: has_extract,
+            is_extract: is_extract || (start_button.is_done() && has_extract),
+            inline: true,
+            bytes: true
+        )
+        if matches!(
+            start_button,
+            DownloadProgressBtn::Enabled | DownloadProgressBtn::Done,
+        ) {
+            button(
+                attrs: attributes! {
+                    class=(class!("mt-2"))
+                    @click=$(async |_e: Event| {
+                        start.set(true);
+                    })
+                    if start.get() || start_button.is_done() {
+                        disabled="true"
+                    }
+                },
+                if completed || start_button.is_done() {
+                    "Done ✅"
+                } else {
+                    "Start"
+                }
+            )
+        }
+    })
+}
+
 fn readable_bytes(current: u128, total: u128, bits: bool) -> String {
     const BYTE_UNITS: [&str; 6] = ["B", "KB", "MB", "GB", "TB", "PB"];
     const BIT_UNITS: [&str; 6] = ["b", "Kb", "Mb", "Gb", "Tb", "Pb"];
 
     let units = if bits { BIT_UNITS } else { BYTE_UNITS };
-
     let (current, total) = if bits { (current * 8, total * 8) } else { (current, total) };
 
     let mut size = total as f64;
     let mut unit = 0;
-
     while size >= 1000.0 && unit < units.len() - 1 {
         size /= 1000.0;
         unit += 1;
@@ -122,7 +235,7 @@ fn readable_bytes(current: u128, total: u128, bits: bool) -> String {
 }
 
 #[component]
-pub async fn progress_wrapper(
+pub async fn progress_bars(
     cx: &Cx,
     name: &str,
     current: u128,
@@ -154,14 +267,14 @@ pub async fn progress_wrapper(
                     </span>
                 }
             </div>
-            inner_progress(
+            progress_bar(
                 label: "Download",
                 value: current_dl,
                 max: total_dl,
                 inline: inline
             )
             if has_extract {
-                inner_progress(
+                progress_bar(
                     label: "Extract",
                     value: current_ex,
                     max: total_ex,
@@ -173,7 +286,7 @@ pub async fn progress_wrapper(
 }
 
 #[component]
-async fn inner_progress(cx: &Cx, label: &str, value: u128, max: u128, inline: bool) -> Result<impl View> {
+async fn progress_bar(cx: &Cx, label: &str, value: u128, max: u128, inline: bool) -> Result<impl View> {
     Ok(view! {
         <div class="">
             <div
