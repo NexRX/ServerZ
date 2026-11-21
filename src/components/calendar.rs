@@ -55,7 +55,7 @@ pub async fn calendar_cally_with_output(
     Ok(view! {
         <div class=(class!(attrs.remove("class"))) (attrs)>
             <calendar-date class="cally">(child)</calendar-date>
-            <output id=(output_id.clone()) aria-live="polite" class="label">
+            <output id=(output_id) aria-live="polite" class="label">
                 "No date selected"
             </output>
             <script>(script)</script>
