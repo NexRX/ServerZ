@@ -1,6 +1,6 @@
 use super::{DAYZ_SERVER_APPID, Depot};
 use anyhow::{Result, anyhow};
-use std::{default, process::Stdio};
+use std::process::Stdio;
 use tokio::{
     io::{AsyncBufReadExt as _, BufReader},
     process::Command,
@@ -39,8 +39,13 @@ impl DepotSignin {
 
     #[instrument(level = "debug", skip_all, ret, err)]
     pub async fn start(self) -> Result<()> {
-        let cmd = format!("{} -app {DAYZ_SERVER_APPID} -qr", Depot::BINARY_FILEPATH);
-        let mut child = Command::new(cmd).stdin(Stdio::piped()).stdout(Stdio::piped()).spawn()?;
+        let mut child = Command::new(Depot::BINARY_FILEPATH)
+            .arg("-app")
+            .arg(DAYZ_SERVER_APPID.to_string())
+            .arg("-qr")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()?;
 
         let mut _stdin = child.stdin.take().ok_or_else(|| anyhow!("Failed depot sign-in (internal error 0a)"))?;
         let stdout = child.stdout.take().ok_or_else(|| anyhow!("Failed depot sign-in (internal error 0b)"))?;
@@ -50,10 +55,16 @@ impl DepotSignin {
             trace!(?line, "New Line");
             if line.starts_with(Self::CLI_QR_READY) {
                 let mut qr = String::new();
-                for _ in 0..Self::CLI_QR_LINES {
+                for i in 0..Self::CLI_QR_LINES {
+                    #[allow(clippy::manual_range_contains)]
+                    if i < 6 {
+                        continue;
+                    }
+
                     qr.push_str(
                         &lines.next_line().await?.ok_or_else(|| anyhow!("Failed depot sign-in (internal error 1a)"))?,
                     );
+                    qr.push('\n');
                 }
                 self.eventbus.send(DepotSigninEvent::QR(qr))?;
             }
