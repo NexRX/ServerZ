@@ -48,12 +48,10 @@ async fn create_steam(cx: &Cx, Form(input): Form<SteamDepot>) -> Result<SeeOther
 pub async fn setup_steam(cx: &Cx) -> Result<impl View> {
     Steam::ensure_unavailable(cx).await?;
 
-    let btn_state = if Depot::is_downloaded().await.unwrap_or_default() {
-        DownloadProgressBtn::Done
-    } else {
-        DownloadProgressBtn::Enabled
+    let btn_state = match Depot::is_downloaded().await.unwrap_or_default() {
+        true => DownloadProgressBtn::Done,
+        false => DownloadProgressBtn::Enabled,
     };
-    let download_warning = signal(cx, || false);
 
     Ok(view! {
         <form
@@ -73,11 +71,6 @@ pub async fn setup_steam(cx: &Cx) -> Result<impl View> {
                 start_button: btn_state,
                 form_marker: Some("depot_downloaded")
             )
-            if download_warning.get() {
-                <p class="text-error text-sm" role="alert">
-                    "Download the required Depot before continuing."
-                </p>
-            }
             input(
                 label: Some("Steam Username"),
                 label_for: Some(SteamDepotValidation::SteamUsername.name()),

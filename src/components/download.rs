@@ -157,6 +157,7 @@ async fn download_progress_view(
                 legend: legend,
                 label: label,
                 bg_border: true,
+                error: form_warning.get(),
                 class: "w-full",
                 download_progress_content(
                     name: name,
@@ -262,7 +263,7 @@ async fn download_progress_content(
             )
             if form_warning.get() {
                 <p class="text-error text-sm" role="alert">
-                    "Download before continuing"
+                    "Start & finish download before continuing"
                 </p>
             }
         }
