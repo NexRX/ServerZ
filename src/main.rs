@@ -15,6 +15,8 @@ mod user;
 use constcat::concat;
 use tracing::{info, instrument};
 
+const STD_EVENT_BUFFER: usize = 64;
+
 #[cfg(debug_assertions)]
 pub const DATA_FOLDER: &str = "./data";
 #[cfg(not(debug_assertions))]

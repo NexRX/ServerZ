@@ -1,5 +1,6 @@
 use crate::components::prelude::*;
 use crate::crypto::Secret;
+use crate::download::ReceiveLatest as _;
 use crate::guard::Guard;
 use crate::steam::{Depot, Steam};
 use garde::Validate;
@@ -9,8 +10,8 @@ use server_z_macros::FormValidation;
 use topcoat::router::content::Form;
 use topcoat::router::error::SeeOther;
 use topcoat::router::{Route, route};
-use topcoat::runtime::signal;
-use topcoat::view::attributes;
+use topcoat::runtime::{Event, connected, signal};
+use topcoat::view::{attributes, component, emit, live};
 use topcoat::{
     Result,
     context::Cx,
@@ -25,9 +26,6 @@ pub struct SteamDepot {
     pub steam_username: String,
     #[garde(dive)]
     pub steam_password: Secret,
-    #[serde(default)]
-    #[garde(custom(is_true))]
-    depot_downloaded: bool,
 }
 
 pub fn is_true(v: &bool, _: &&&()) -> garde::Result {
@@ -71,24 +69,51 @@ pub async fn setup_steam(cx: &Cx) -> Result<impl View> {
                 start_button: btn_state,
                 form_marker: Some("depot_downloaded")
             )
-            input(
-                label: Some("Steam Username"),
-                label_for: Some(SteamDepotValidation::SteamUsername.name()),
-                inner_attrs: SteamDepotValidation::SteamUsername.attrs(cx),
-                attrs: attributes!(class="w-72")
-            )
-            input(
-                ty: InputType::Password,
-                label: Some("Steam Password"),
-                label_for: Some(SteamDepotValidation::SteamPassword.name()),
-                inner_attrs: SteamDepotValidation::SteamPassword.attrs(cx),
-                attrs: attributes!(class="w-72")
-            )
+            depot_signin_qr()
             button(
                 attrs: attributes!(type="submit" class="mt-auto ml-auto self-end"),
                 "Next"
                 <div class="iconify solar--arrow-right-bold-duotone" />
             )
         </form>
+    })
+}
+
+#[component]
+pub async fn depot_signin_qr(cx: &Cx) -> Result<impl View> {
+    let start = signal(cx, || false);
+    Ok(view! {
+        (live! {
+            let signin = Depot::new_signin();
+            let mut sub = signin.subscribe();
+
+            if start.get() {
+                signin.start_bg();
+                emit! { <p>"Loading..."</p> }?;
+            }
+
+            if !connected(cx) {
+                return emit! {
+                    button(
+                        ty: ButtonType::Button,
+                        attrs: attributes!(
+                            @click=$(async |_e: Event| {
+                                start.set(true);
+                            })
+                        ),
+                        "Get QR"
+                    )
+                };
+            }
+
+            while let Some(event) = sub.recv_latest().await {
+                match event {
+                    crate::steam::DepotSigninEvent::QR(qr) => emit! { <p class="leading-0 tracking-normal">(qr)</p> }?,
+                    crate::steam::DepotSigninEvent::Failed => return emit! { <p class="Failure">"Failed to scan QR in time"</p> },
+                };
+            };
+
+            emit! { <p class="Failure">"Failed to scan QR in time"</p> }
+        })
     })
 }

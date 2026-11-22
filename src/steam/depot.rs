@@ -1,14 +1,20 @@
-use crate::{DATA_FOLDER, download::Downloader};
+use crate::{DATA_FOLDER, download::Downloader, steam::DepotSignin};
+use anyhow::Result;
 use constcat::concat;
 use server_z_macros::{arch_alt, github_release_asset_bytes};
 use std::env::consts::OS;
 
+#[derive(Debug)]
 pub struct Depot {}
 
-/// Associated functions & constants
+// Methods
+impl Depot {}
+
+// Associated functions & constants
 impl Depot {
-    const BINARY_FILENAME: &str = "DepotDownloader";
-    const BINARY_FILEPATH: &str = concat!(DATA_FOLDER, "/bin/", Depot::BINARY_FILENAME);
+    // Binary
+    pub(super) const BINARY_FILENAME: &str = "DepotDownloader";
+    pub(super) const BINARY_FILEPATH: &str = concat!(DATA_FOLDER, "/bin/", Depot::BINARY_FILENAME);
 
     const ZIP_FILENAME: &str = concat!("DepotDownloader-", OS, "-", arch_alt!(), ".zip");
     const DOWNLOAD_ZIP_BYTES: u128 = github_release_asset_bytes!(
@@ -19,7 +25,11 @@ impl Depot {
         "https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_3.4.0";
     const DOWNLOAD_ZIP_URL: &str = concat!(Depot::DOWNLOAD_BASE_URL, "/", Depot::ZIP_FILENAME);
 
-    pub async fn is_downloaded() -> anyhow::Result<bool> {
+    pub fn new_signin() -> DepotSignin {
+        DepotSignin::new()
+    }
+
+    pub async fn is_downloaded() -> Result<bool> {
         std::fs::exists(Depot::BINARY_FILEPATH).map_err(Into::into)
     }
 
@@ -33,3 +43,41 @@ impl Depot {
             .build()
     }
 }
+
+//
+//
+//
+//
+//        ██████████████      ██  ██  ██        ██    ██████████████
+//        ██          ██  ██  ██    ██  ██████        ██          ██
+//        ██  ██████  ██          ██  ████            ██  ██████  ██
+//        ██  ██████  ██  ██████  ████    ██████  ██  ██  ██████  ██
+//        ██  ██████  ██    ██        ██    ██  ██    ██  ██████  ██
+//        ██          ██  ████  ████    ████  ██  ██  ██          ██
+//        ██████████████  ██  ██  ██  ██  ██  ██  ██  ██████████████
+//                          ██████    ████    ██████
+//        ██████████  ████████  ██        ██████  ████  ██  ██  ██
+//        ██    ██  ██  ██    ██  ████          ██  ████████      ██
+//              ████  ██  ██  ██    ████████  ██  ████  ████
+//        ██████    ██    ██      ████          ████    ██████  ██
+//        ██      ██████  ██████  ██  ██████████  ██        ████
+//          ██████████  ██████                  ██  ████████      ██
+//        ██  ██  ██████    ████████    ██████    ██  ██  ██████
+//                ████  ████    ██    ██████    ████    ████    ██
+//        ██  ██████  ████  ██  ██      ██████████  ██  ██  ████
+//        ██    ████          ██  ██████        ██  ████████  ██  ██
+//        ██    ████████    ████    ██████        ██  ██      ██
+//        ██  ████        ██      ████    ██          ████      ██
+//        ██      ██████████      ██  ██████████  ██████████  ██████
+//                        ██████                ████      ██████████
+//        ██████████████  ██  ██████    ██████  ████  ██  ██████
+//        ██          ██    ██  ██    ██      ██  ██      ██    ████
+//        ██  ██████  ██  ██    ██      ████████  ██████████  ██
+//        ██  ██████  ██  ██      ██████        ████        ████████
+//        ██  ██████  ██  ██        ██████      ████  ██  ████████
+//        ██          ██  ██  ██  ████  ██    ██  ████  ██  ██  ██
+//        ██████████████  ██      ██  ██████████          ██████
+//
+//
+//
+//

@@ -19,8 +19,6 @@ use tracing::{debug, info, instrument};
 use typed_builder::TypedBuilder;
 use zip::ZipArchive;
 
-const EVENT_BUFFER: usize = 64;
-
 #[derive(TypedBuilder)]
 pub struct Downloader {
     #[builder(setter(into))]
@@ -67,7 +65,7 @@ impl Downloader {
     }
 
     pub fn subscribe(&mut self) -> Receiver<DownloadEvent> {
-        self.eventbus.get_or_insert_with(|| broadcast::channel(EVENT_BUFFER).0).subscribe()
+        self.eventbus.get_or_insert_with(|| broadcast::channel(crate::STD_EVENT_BUFFER).0).subscribe()
     }
 
     pub fn start_bg(self) {
@@ -117,11 +115,11 @@ impl Downloader {
     }
 }
 
-pub trait ReceiveLatest {
-    fn rceiver(&mut self) -> &mut Receiver<crate::download::DownloadEvent>;
+pub trait ReceiveLatest<T: Clone> {
+    fn receiver(&mut self) -> &mut Receiver<T>;
 
-    async fn recv_latest(&mut self) -> Option<crate::download::DownloadEvent> {
-        let receiver = self.rceiver();
+    async fn recv_latest(&mut self) -> Option<T> {
+        let receiver = self.receiver();
 
         let mut latest = loop {
             match receiver.recv().await {
@@ -141,8 +139,8 @@ pub trait ReceiveLatest {
     }
 }
 
-impl ReceiveLatest for Receiver<DownloadEvent> {
-    fn rceiver(&mut self) -> &mut Receiver<crate::download::DownloadEvent> {
+impl<T: Clone> ReceiveLatest<T> for Receiver<T> {
+    fn receiver(&mut self) -> &mut Receiver<T> {
         self
     }
 }

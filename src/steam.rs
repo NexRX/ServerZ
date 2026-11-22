@@ -1,12 +1,16 @@
 mod depot;
+mod depot_signin;
 
 pub use depot::*;
+pub use depot_signin::*;
 
 use crate::{crypto::Encrypted, db::Singleton, guard::Guard};
 use anyhow::ensure;
 use jiff::Timestamp;
 use toasty::{Executor, Model};
 use topcoat::context::Cx;
+
+const DAYZ_SERVER_APPID: u32 = 223350;
 
 #[derive(Debug, Clone, Model)]
 pub struct Steam {

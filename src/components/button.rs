@@ -6,6 +6,26 @@ use topcoat::{
     view::{Attributes, Child, Class, StaticClass, View, class, component, view},
 };
 
+/// Native HTML button types. Defaults to `Submit`.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum ButtonType {
+    /// Submits the form containing the button.
+    #[default]
+    Submit,
+    Reset,
+    Button,
+}
+
+impl ButtonType {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::Submit => "submit",
+            Self::Reset => "reset",
+            Self::Button => "button",
+        }
+    }
+}
+
 /// daisyUI button colors. Defaults to `Primary`.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub enum ButtonColor {
@@ -127,6 +147,7 @@ pub fn button_variants(
 #[component]
 pub async fn button(
     cx: &Cx,
+    #[default] ty: ButtonType,
     #[default] color: ButtonColor,
     #[default] variant: ButtonVariant,
     #[default] size: ButtonSize,
@@ -134,8 +155,11 @@ pub async fn button(
     #[default] mut attrs: Attributes,
     #[default] child: Child<'_>,
 ) -> Result<impl View> {
+    attrs.remove("type");
+
     Ok(view! {
         <button
+            type=(ty.as_str())
             class=(class!(
                 button_variants(color, variant, size, layout),
                 attrs.remove("class"),
