@@ -115,7 +115,13 @@ pub async fn depot_signin_qr(cx: &Cx) -> Result<impl View> {
                             (qr)
                         </span>
                     }?,
-                    crate::steam::DepotSigninEvent::Failed => return emit! { <p class="Failure">"Failed to scan QR in time"</p> },
+                    crate::steam::DepotSigninEvent::Failed { message } => return emit! { <p class="text-error">(message)</p> },
+                    crate::steam::DepotSigninEvent::Success { steam_username } => return emit! {
+                        <p class="text-success">
+                            "Successfully signed in as "
+                            (steam_username)
+                        </p>
+                    },
                 };
             };
 

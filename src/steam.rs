@@ -1,16 +1,18 @@
 mod depot;
 mod depot_signin;
 
+use constcat::concat;
 pub use depot::*;
 pub use depot_signin::*;
 
-use crate::{crypto::Encrypted, db::Singleton, guard::Guard};
+use crate::{DATA_FOLDER, crypto::Encrypted, db::Singleton, guard::Guard};
 use anyhow::ensure;
 use jiff::Timestamp;
 use toasty::{Executor, Model};
 use topcoat::context::Cx;
 
 const DAYZ_SERVER_APPID: u32 = 223350;
+const STEAM_DATA_FOLDER: &str = concat!(DATA_FOLDER, "/steamdepot");
 
 #[derive(Debug, Clone, Model)]
 pub struct Steam {
