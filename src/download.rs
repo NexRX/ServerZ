@@ -1,6 +1,7 @@
 use crate::TMP_FOLDER;
-use anyhow::bail;
+use anyhow::{Result, bail};
 use derive_more::{Deref, DerefMut, Display, IsVariant};
+use std::os::unix::fs::PermissionsExt;
 use std::sync::Arc;
 use std::{fmt::Debug, fs::File};
 use std::{
@@ -9,6 +10,7 @@ use std::{
 };
 use stream_download::{StreamDownload, storage::temp::TempStorageProvider};
 use tempfile::NamedTempFile;
+use tokio::fs;
 use tokio::sync::broadcast::error::{RecvError, TryRecvError};
 use tokio::{
     fs::create_dir_all,
@@ -33,6 +35,8 @@ pub struct Downloader {
     filename_in_archive: Option<String>,
     #[builder(default = true, setter(into))]
     remove_target: bool,
+    #[builder(default = false, setter(into))]
+    make_executable: bool,
 
     #[builder(default, setter(skip))]
     eventbus: Option<Sender<DownloadEvent>>,
@@ -73,7 +77,7 @@ impl Downloader {
     }
 
     #[instrument(level = "info", name = "Download::start", skip_all, fields(name = %self.name, url = %self.url), ret, err)]
-    pub async fn start(self) -> anyhow::Result<File> {
+    pub async fn start(self) -> Result<File> {
         info!("Starting");
         match self.filename_in_archive.as_ref() {
             Some(filename_in_archive) => self.start_with_extract(filename_in_archive).await,
@@ -81,7 +85,7 @@ impl Downloader {
         }
     }
 
-    async fn start_with_extract(&self, filename_in_archive: &str) -> anyhow::Result<File> {
+    async fn start_with_extract(&self, filename_in_archive: &str) -> Result<File> {
         let tmp_zip_file = download(&self.url, self.publisher()).await?;
 
         let archive = zip::ZipArchive::new(tmp_zip_file)?;
@@ -90,19 +94,24 @@ impl Downloader {
         self.persist(tmp_file).await
     }
 
-    async fn start_without_extract(&self) -> anyhow::Result<File> {
+    async fn start_without_extract(&self) -> Result<File> {
         let tmp_file = download(&self.url, self.publisher()).await?;
         self.persist(tmp_file).await
     }
 
-    async fn persist(&self, tmp_file: NamedTempFile) -> anyhow::Result<File> {
+    async fn persist(&self, tmp_file: NamedTempFile) -> Result<File> {
         if self.remove_target {
             remove_file(&self.target).await?;
         }
         if let Some(parent) = Path::new(&self.target).parent() {
             create_dir_all(parent).await?;
         }
-        Ok(tmp_file.persist(&self.target)?)
+        let file = tmp_file.persist(&self.target)?;
+        if self.make_executable {
+            make_executable(&self.target).await?;
+        }
+
+        Ok(file)
     }
 
     fn publisher(&self) -> Option<Publisher> {
@@ -151,7 +160,7 @@ async fn extract(
     filename_in_archive: impl ToString + Debug,
     to: impl ToString + Debug,
     mut pub_progress: Option<Publisher>,
-) -> anyhow::Result<NamedTempFile> {
+) -> Result<NamedTempFile> {
     let filename_in_archive = filename_in_archive.to_string();
     let to = to.to_string();
 
@@ -199,7 +208,7 @@ async fn extract(
 }
 
 #[instrument(level = "debug", skip_all, ret, err)]
-async fn download(url: impl ToString + Debug, mut pub_progress: Option<Publisher>) -> anyhow::Result<NamedTempFile> {
+async fn download(url: impl ToString + Debug, mut pub_progress: Option<Publisher>) -> Result<NamedTempFile> {
     let url = url.to_string();
     let mut reader =
         match StreamDownload::new_http(url.parse()?, TempStorageProvider::new(), stream_download::Settings::default())
@@ -247,7 +256,18 @@ async fn download(url: impl ToString + Debug, mut pub_progress: Option<Publisher
     Ok(download_file)
 }
 
-pub async fn remove_file(path: impl AsRef<Path>) -> anyhow::Result<()> {
+#[instrument(level = "trace", skip_all, ret, err)]
+pub async fn make_executable(path: impl AsRef<Path>) -> Result<()> {
+    let path = path.as_ref();
+    let mut perms = fs::metadata(path).await?.permissions();
+    let current_mode = perms.mode();
+    perms.set_mode(current_mode | 0o110); // Adds +x for user, group, and others
+    fs::set_permissions(path, perms).await?;
+    Ok(())
+}
+
+#[instrument(level = "trace", skip_all, ret, err)]
+pub async fn remove_file(path: impl AsRef<Path>) -> Result<()> {
     if let Err(err) = tokio::fs::remove_file(path).await
         && err.kind() != ErrorKind::NotFound
     {

@@ -40,6 +40,7 @@ impl Depot {
             .filename_in_archive(Depot::BINARY_FILENAME)
             .target(Depot::BINARY_FILEPATH)
             .total_download_bytes(Depot::DOWNLOAD_ZIP_BYTES)
+            .make_executable(true)
             .build()
     }
 }

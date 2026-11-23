@@ -110,7 +110,7 @@ async fn setup_layout(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
             </div>
             <div class="relative z-10 flex-1 flex justify-center">
                 <div
-                    class="w-140 bg-base-200 border-base-300 border min-h-140 my-auto p-6 gap-4 flex flex-col rounded-xl"
+                    class="min-w-140 bg-base-200 border-base-300 border min-h-140 my-auto p-6 gap-4 flex flex-col rounded-xl"
                 >
                     <div class="flex justify-between">
                         <h2 class="text-3xl font-medium">(setup_title)</h2>

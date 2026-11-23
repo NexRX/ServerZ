@@ -17,7 +17,7 @@ pub async fn fieldset(
     #[default]
     #[into]
     label: Option<&str>,
-    #[default] bg_border: bool,
+    #[default] bordered: bool,
     #[default] error: bool,
     #[default] class: &'static str,
     #[default] mut attrs: Attributes,
@@ -27,7 +27,7 @@ pub async fn fieldset(
         <fieldset
             class=(class!(
                 "fieldset",
-                BG_BORDERED_CLASS if bg_border,
+                BG_BORDERED_CLASS if bordered,
                 "border-error" if error,
                 class,
                 attrs.remove("class"),

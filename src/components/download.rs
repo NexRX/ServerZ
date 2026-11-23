@@ -1,4 +1,7 @@
-use crate::components::{button::button, fieldset::fieldset};
+use crate::components::{
+    button::{ButtonType, button},
+    fieldset::fieldset,
+};
 use crate::download::Downloader;
 use crate::tw;
 use crate::{components::progress::*, download::ReceiveLatest as _};
@@ -30,12 +33,17 @@ pub async fn download_progress(
     cx: &Cx,
     mut downloader: Downloader,
     start: Signal<bool>,
-    #[default] fieldset: Option<(&str, &str)>,
+    #[default]
+    #[into]
+    fieldset: Option<(&str, &str)>,
     #[default] start_button: DownloadProgressBtn,
     #[default] show_name: bool,
-    #[default] form_marker: Option<&str>,
+    #[default]
+    #[into]
+    form_marker: Option<&str>,
 ) -> Result<impl View> {
     let form_warning = signal(cx, || false);
+    let started = start.get();
 
     Ok(view! {
         (live! {
@@ -43,7 +51,7 @@ pub async fn download_progress(
             let has_extract = downloader.has_extract_step();
             let name = downloader.name.clone();
 
-            if start.get() {
+            if started {
                 downloader.start_bg();
             }
 
@@ -156,7 +164,7 @@ async fn download_progress_view(
             fieldset(
                 legend: legend,
                 label: label,
-                bg_border: true,
+                bordered: true,
                 error: form_warning.get(),
                 class: "w-full",
                 download_progress_content(
@@ -222,8 +230,8 @@ async fn download_progress_content(
             DownloadProgressBtn::Enabled | DownloadProgressBtn::Done,
         ) {
             button(
+                ty: ButtonType::Button,
                 attrs: attributes! {
-                    type="button"
                     class=(class!("mt-2"))
                     @click=$(async |_e: Event| {
                         form_warning.set(false);
