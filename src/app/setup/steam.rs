@@ -109,11 +109,11 @@ pub async fn depot_signin_qr(cx: &Cx) -> Result<impl View> {
             while let Some(event) = sub.recv_latest().await {
                 match event {
                     crate::steam::DepotSigninEvent::QR(qr) => emit! {
-                        <p
+                        <span
                             class="font-mono leading-none tracking-normal whitespace-pre text-xs"
                         >
                             (qr)
-                        </p>
+                        </span>
                     }?,
                     crate::steam::DepotSigninEvent::Failed => return emit! { <p class="Failure">"Failed to scan QR in time"</p> },
                 };
