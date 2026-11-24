@@ -24,8 +24,8 @@ pub struct Steam {
     #[auto]
     pub updated_at: Timestamp,
 
-    pub auth_user: String,
-    pub auth_password: Encrypted,
+    pub steam_username: String,
+    pub is_authenticated: bool,
 }
 
 impl Singleton for Steam {

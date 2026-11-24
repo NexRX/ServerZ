@@ -111,6 +111,7 @@ impl DepotSignin {
                 let cmd_success = child.wait().await?.success();
                 match (is_ending_successfully && cmd_success, steam_username) {
                     (true, Some(steam_username)) => {
+                        debug!("Signed in to steam successfully");
                         self.eventbus.send(DepotSigninEvent::Success { steam_username })?;
                         return Ok(());
                     }

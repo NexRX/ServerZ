@@ -1,4 +1,6 @@
+use crate::app::setup::SetupStep;
 use crate::components::prelude::*;
+use crate::db::db;
 use crate::download::ReceiveLatest as _;
 use crate::guard::Guard;
 use crate::steam::{Depot, Steam};
@@ -8,7 +10,7 @@ use serde::{Deserialize, Serialize};
 use server_z_macros::FormValidation;
 use topcoat::Error;
 use topcoat::router::content::Form;
-use topcoat::router::error::SeeOther;
+use topcoat::router::error::{SeeOther, see_other};
 use topcoat::router::{Route, route};
 use topcoat::runtime::{Event, connected, signal};
 use topcoat::view::{attributes, component, emit, live};
@@ -29,7 +31,7 @@ pub struct SteamDepot {
 }
 
 pub fn is_true(v: &bool, _: &&&()) -> garde::Result {
-    match !*v {
+    match *v {
         true => Ok(()),
         false => Err(garde::Error::new("depot must be downloaded")),
     }
@@ -39,7 +41,8 @@ pub fn is_true(v: &bool, _: &&&()) -> garde::Result {
 #[route(POST "/api/setup/steam")]
 async fn create_steam(cx: &Cx, Form(input): Form<SteamDepot>) -> Result<SeeOther> {
     input.validate()?;
-    todo!()
+    toasty::create!(Steam { steam_username: input.steam_username, is_authenticated: true }).exec(&mut db(cx)).await?;
+    Ok(see_other(SetupStep::Steam.next().to_uri()))
 }
 
 #[page]
