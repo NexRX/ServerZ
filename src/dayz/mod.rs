@@ -6,3 +6,5 @@ pub use launch_params::*;
 #[allow(unused)]
 pub use mods::*;
 pub use server::*;
+
+pub const SERVER_PATH: &str = DEFAULT_SERVER_PATH;

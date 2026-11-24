@@ -13,7 +13,7 @@ use jiff::Timestamp;
 use toasty::{Executor, Model};
 use topcoat::context::Cx;
 
-const DAYZ_SERVER_APPID: u32 = 223350;
+pub const DAYZ_SERVER_APPID: u32 = 223350;
 const STEAM_DATA_FOLDER: &str = concat!(DATA_FOLDER, "/steamdepot");
 
 #[derive(Debug, Clone, Model)]
@@ -31,6 +31,10 @@ pub struct Steam {
 }
 
 impl Steam {
+    pub fn depot(&self, current_dir: impl ToString) -> Depot {
+        Depot::new(&self.steam_username, current_dir)
+    }
+
     #[instrument(level = "trace", skip_all, ret, err)]
     pub async fn is_depot_logged_in(&self) -> Result<bool> {
         Depot::is_logged_in(&self.steam_username).await

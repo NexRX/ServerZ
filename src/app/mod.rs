@@ -4,11 +4,17 @@ pub mod setup;
 pub mod showcase;
 
 use crate::app::setup::ensure_setup;
+use crate::components::prelude::*;
+use crate::dayz::SERVER_PATH;
+use crate::db::Singleton;
 use crate::features::app_menu::app_menu;
 use crate::guard::Guard;
+use crate::steam::{DAYZ_SERVER_APPID, Steam};
 use crate::user::User;
 use toasty::Db;
 use topcoat::cookie::CookieLayer;
+use topcoat::runtime::{Event, procedure};
+use topcoat::view::attributes;
 use topcoat::{
     Result,
     asset::{AssetBundle, RouterBuilderAssetExt},
@@ -82,9 +88,28 @@ async fn root(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
     })
 }
 
+#[procedure]
+pub async fn app_manifest(cx: &Cx) -> Result<()> {
+    Steam::fetch(cx).await?.depot(SERVER_PATH).download_app(DAYZ_SERVER_APPID).await;
+
+    Ok(())
+}
+
 #[page]
 pub async fn home(cx: &Cx) -> Result<impl View> {
-    Ok(view! { <main class="mx-auto max-w-2xl px-4 py-16">"hi"</main> })
+    Ok(view! {
+        <main class="mx-auto max-w-2xl px-4 py-16">
+            "hi"
+            button(
+                attrs: attributes!(
+                    @click=$(async |_e: Event| {
+                        app_manifest().await;
+                    })
+                ),
+                "Button"
+            )
+        </main>
+    })
 }
 
 #[component]
