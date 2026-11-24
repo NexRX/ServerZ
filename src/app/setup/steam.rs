@@ -2,6 +2,7 @@ use crate::app::setup::SetupStep;
 use crate::components::prelude::*;
 use crate::db::db;
 use crate::download::ReceiveLatest as _;
+use crate::ensure;
 use crate::guard::Guard;
 use crate::steam::{Depot, Steam};
 use garde::Validate;
@@ -41,7 +42,10 @@ pub fn is_true(v: &bool, _: &&&()) -> garde::Result {
 #[route(POST "/api/setup/steam")]
 async fn create_steam(cx: &Cx, Form(input): Form<SteamDepot>) -> Result<SeeOther> {
     input.validate()?;
-    toasty::create!(Steam { steam_username: input.steam_username, is_authenticated: true }).exec(&mut db(cx)).await?;
+    let steam = toasty::create!(Steam { steam_username: input.steam_username, is_authenticated: true })
+        .exec(&mut db(cx))
+        .await?;
+    ensure!(steam.is_depot_logged_in().await.unwrap_or_default(), "Steam client created but not signed in");
     Ok(see_other(SetupStep::Steam.next().to_uri()))
 }
 
@@ -116,7 +120,7 @@ pub async fn depot_signin_qr(cx: &Cx) -> Result<impl View> {
                 };
             }
 
-            let signin = Depot::new_signin();
+            let signin = Depot::new_login();
             let mut sub = signin.subscribe();
             let initial = emit! {
                 steam_username()
@@ -127,33 +131,75 @@ pub async fn depot_signin_qr(cx: &Cx) -> Result<impl View> {
                 return Ok(initial);
             }
 
-            signin.start_bg();
+            signin.login_bg();
 
-            while let Some(event) = sub.recv_latest().await {
-                match event {
-                    crate::steam::DepotSigninEvent::QR(qr) => emit! {
-                        <span
-                            class="font-mono leading-none tracking-normal whitespace-pre text-xs"
-                        >
-                            (qr)
-                        </span>
-                        <span class="mx-auto">
-                            "New QR in "
-                            countdown(value: 20, live: true)
-                            " seconds"
-                        </span>
-                        steam_username()
-                    }?,
-                    crate::steam::DepotSigninEvent::Failed { message } => return emit! { <p class="text-error">(message)</p> },
-                    crate::steam::DepotSigninEvent::Success { steam_username } => return emit! {
-                        steam_username(value: Some(steam_username.clone()))
-                        <p class="text-success">
-                            "Successfully signed in as "
-                            (steam_username)
-                        </p>
-                    },
-                };
-            };
+            let mut qr_code = None::<String>;
+            let mut seconds_remaining = 20_u16;
+            let mut next_tick = tokio::time::Instant::now()
+                + std::time::Duration::from_secs(1);
+
+            loop {
+                tokio::select! {
+                    event = sub.recv_latest() => {
+                        match event {
+                            Some(crate::steam::DepotSigninEvent::QR(qr)) => {
+                                seconds_remaining = 20;
+                                next_tick = tokio::time::Instant::now()
+                                    + std::time::Duration::from_secs(1);
+                                qr_code = Some(qr);
+                                let qr = qr_code.clone().expect("QR was just set");
+                                emit! {
+                                    <span
+                                        class="font-mono leading-none tracking-normal whitespace-pre text-xs"
+                                    >
+                                        (qr)
+                                    </span>
+                                    <span class="mx-auto">
+                                        "New QR in "
+                                        countdown(value: seconds_remaining)
+                                        " seconds"
+                                    </span>
+                                    steam_username()
+                                }?;
+                            }
+                            Some(crate::steam::DepotSigninEvent::Failed { message }) => {
+                                return emit! { <p class="text-error">(message)</p> };
+                            }
+                            Some(crate::steam::DepotSigninEvent::Success { steam_username }) => {
+                                return emit! {
+                                    steam_username(value: Some(steam_username.clone()))
+                                    <p class="text-success">
+                                        "Successfully signed in as "
+                                        (steam_username)
+                                    </p>
+                                };
+                            }
+                            None => break,
+                        }
+                    }
+                    _ = tokio::time::sleep_until(next_tick),
+                        if qr_code.is_some() && seconds_remaining > 0 =>
+                    {
+                        seconds_remaining -= 1;
+                        next_tick = tokio::time::Instant::now()
+                            + std::time::Duration::from_secs(1);
+                        let qr = qr_code.clone().expect("countdown requires a QR");
+                        emit! {
+                            <span
+                                class="font-mono leading-none tracking-normal whitespace-pre text-xs"
+                            >
+                                (qr)
+                            </span>
+                            <span class="mx-auto">
+                                "New QR in "
+                                countdown(value: seconds_remaining)
+                                " seconds"
+                            </span>
+                            steam_username()
+                        }?;
+                    }
+                }
+            }
 
             emit! {
                 steam_username()

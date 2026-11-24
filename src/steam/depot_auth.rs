@@ -3,13 +3,13 @@ use anyhow::{Result, anyhow};
 use std::process::Stdio;
 use tokio::{
     fs::{canonicalize, create_dir_all},
-    io::{AsyncBufReadExt as _, BufReader},
-    process::Command,
+    io::{AsyncBufReadExt as _, BufReader, Lines},
+    process::{Child, ChildStdout, Command},
     sync::broadcast::{self, Receiver, Sender},
 };
 use tracing::{debug, instrument, trace};
 
-pub struct DepotSignin {
+pub struct DepotAuthenticator {
     eventbus: Sender<DepotSigninEvent>,
 }
 
@@ -20,50 +20,19 @@ pub enum DepotSigninEvent {
     Success { steam_username: String },
 }
 
-impl DepotSignin {
-    // CLI
-    const CLI_QR_READY: &str = "Use the Steam Mobile App to sign in with this QR code:";
-    const CLI_QR_LINES: usize = 35;
-
-    const CLI_QR_SUCCESS_USERNAME_START: &str = "Success! Next time you can login with -username ";
-    const CLI_QR_SUCCESS_USERNAME_END: &str = " -remember-password instead of -qr.";
-
-    const CLI_QR_SUCCESS_1: &str = "Got AppInfo for 223350";
-    const CLI_QR_SUCCESS_2: &str = "Disconnected from Steam";
-
-    const CLI_INIT_FAILED: &str = "Error: InitializeSteam failed";
-
-    pub fn new() -> Self {
-        Self { eventbus: broadcast::channel(crate::STD_EVENT_BUFFER).0 }
-    }
-
+// Methods
+impl DepotAuthenticator {
     pub fn subscribe(&self) -> Receiver<DepotSigninEvent> {
         self.eventbus.subscribe()
     }
 
-    pub fn start_bg(self) {
-        tokio::spawn(self.start());
+    pub fn login_bg(self) {
+        tokio::spawn(self.login());
     }
 
-    #[instrument(level = "debug", skip_all, ret, err)]
-    pub async fn start(self) -> Result<()> {
-        create_dir_all(STEAM_DATA_FOLDER).await?;
-        let path = canonicalize(Depot::BINARY_FILEPATH).await?;
-        debug!(?path, "Attempting to run command");
-        let mut child = Command::new(path)
-            .current_dir(STEAM_DATA_FOLDER)
-            .arg("-app")
-            .arg(DAYZ_SERVER_APPID.to_string())
-            .arg("-qr")
-            .arg("-remember-password")
-            .arg("-manifest-only")
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .spawn()?;
-
-        let mut _stdin = child.stdin.take().ok_or_else(|| anyhow!("Failed depot sign-in (internal error 0a)"))?;
-        let stdout = child.stdout.take().ok_or_else(|| anyhow!("Failed depot sign-in (internal error 0b)"))?;
-        let mut lines = BufReader::new(stdout).lines();
+    #[instrument(level = "debug", name = "DepotAuthenticator::login", skip_all, ret, err)]
+    pub async fn login(self) -> Result<()> {
+        let (mut child, mut lines) = Self::spawn_login_qr().await?;
 
         let mut steam_username: Option<String> = None;
         let mut is_ending_successfully = false;
@@ -127,5 +96,73 @@ impl DepotSignin {
         const MESSAGE: &str = "Technical signin failure";
         self.eventbus.send(DepotSigninEvent::Failed { message: MESSAGE.to_string() })?;
         return Err(anyhow!("Failed steam depot signin: {MESSAGE}"));
+    }
+}
+
+// Associated
+impl DepotAuthenticator {
+    const CLI_QR_READY: &str = "Use the Steam Mobile App to sign in with this QR code:";
+    const CLI_QR_LINES: usize = 35;
+
+    const CLI_QR_SUCCESS_USERNAME_START: &str = "Success! Next time you can login with -username ";
+    const CLI_QR_SUCCESS_USERNAME_END: &str = " -remember-password instead of -qr.";
+
+    const CLI_QR_SUCCESS_1: &str = "Got AppInfo for 223350";
+    const CLI_QR_SUCCESS_2: &str = "Disconnected from Steam";
+
+    const CLI_INIT_FAILED: &str = "Error: InitializeSteam failed";
+
+    pub fn new() -> Self {
+        Self { eventbus: broadcast::channel(crate::STD_EVENT_BUFFER).0 }
+    }
+
+    #[instrument(level = "trace", skip_all, ret, err)]
+    pub async fn is_logged_in(username: &str) -> Result<bool> {
+        create_dir_all(STEAM_DATA_FOLDER).await?;
+        let path = canonicalize(Depot::BINARY_FILEPATH).await?;
+        let mut child = Command::new(path)
+            .current_dir(STEAM_DATA_FOLDER)
+            .arg("-app")
+            .arg(DAYZ_SERVER_APPID.to_string())
+            .arg("-username")
+            .arg(username)
+            .arg("-remember-password")
+            .arg("-manifest-only")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()?;
+
+        let stdout = child.stdout.take().ok_or_else(|| anyhow!("Failed depot sign-in (internal error 0b)"))?;
+        let mut lines = BufReader::new(stdout).lines();
+
+        while let Some(line) = lines.next_line().await? {
+            if line.starts_with(Self::CLI_QR_SUCCESS_1) {
+                child.kill().await?;
+                return Ok(true);
+            }
+        }
+
+        let _ = child.kill().await;
+        Ok(false)
+    }
+
+    pub async fn spawn_login_qr() -> Result<(Child, Lines<BufReader<ChildStdout>>)> {
+        create_dir_all(STEAM_DATA_FOLDER).await?;
+        let path = canonicalize(Depot::BINARY_FILEPATH).await?;
+        let mut child = Command::new(path)
+            .current_dir(STEAM_DATA_FOLDER)
+            .arg("-app")
+            .arg(DAYZ_SERVER_APPID.to_string())
+            .arg("-qr")
+            .arg("-remember-password")
+            .arg("-manifest-only")
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .spawn()?;
+
+        let mut _stdin = child.stdin.take().ok_or_else(|| anyhow!("Failed depot sign-in (internal error 0a)"))?;
+        let stdout = child.stdout.take().ok_or_else(|| anyhow!("Failed depot sign-in (internal error 0b)"))?;
+        let lines = BufReader::new(stdout).lines();
+        Ok((child, lines))
     }
 }

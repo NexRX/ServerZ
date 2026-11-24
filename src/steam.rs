@@ -1,12 +1,14 @@
 mod depot;
-mod depot_signin;
+mod depot_auth;
 
-use constcat::concat;
 pub use depot::*;
-pub use depot_signin::*;
+pub use depot_auth::*;
+use tracing::instrument;
 
-use crate::{DATA_FOLDER, crypto::Encrypted, db::Singleton, guard::Guard};
+use crate::{DATA_FOLDER, db::Singleton, guard::Guard};
+use anyhow::Result;
 use anyhow::ensure;
+use constcat::concat;
 use jiff::Timestamp;
 use toasty::{Executor, Model};
 use topcoat::context::Cx;
@@ -26,6 +28,13 @@ pub struct Steam {
 
     pub steam_username: String,
     pub is_authenticated: bool,
+}
+
+impl Steam {
+    #[instrument(level = "trace", skip_all, ret, err)]
+    pub async fn is_depot_logged_in(&self) -> Result<bool> {
+        Depot::is_logged_in(&self.steam_username).await
+    }
 }
 
 impl Singleton for Steam {

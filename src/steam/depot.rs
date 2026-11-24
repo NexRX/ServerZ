@@ -1,4 +1,4 @@
-use crate::{DATA_FOLDER, download::Downloader, steam::DepotSignin};
+use crate::{DATA_FOLDER, download::Downloader, steam::DepotAuthenticator};
 use anyhow::Result;
 use constcat::concat;
 use server_z_macros::{arch_alt, github_release_asset_bytes};
@@ -25,8 +25,12 @@ impl Depot {
         "https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_3.4.0";
     const DOWNLOAD_ZIP_URL: &str = concat!(Depot::DOWNLOAD_BASE_URL, "/", Depot::ZIP_FILENAME);
 
-    pub fn new_signin() -> DepotSignin {
-        DepotSignin::new()
+    pub fn new_login() -> DepotAuthenticator {
+        DepotAuthenticator::new()
+    }
+
+    pub async fn is_logged_in(username: &str) -> Result<bool> {
+        DepotAuthenticator::is_logged_in(username).await
     }
 
     pub async fn is_downloaded() -> Result<bool> {
