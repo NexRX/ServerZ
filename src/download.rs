@@ -22,7 +22,7 @@ use typed_builder::TypedBuilder;
 use zip::ZipArchive;
 
 #[derive(TypedBuilder)]
-pub struct Downloader {
+pub struct HttpDownloader {
     #[builder(setter(into))]
     url: String,
     #[builder(setter(into))]
@@ -63,7 +63,7 @@ struct Publisher {
 }
 
 /// Methods
-impl Downloader {
+impl HttpDownloader {
     pub fn has_extract_step(&self) -> bool {
         self.filename_in_archive.is_some()
     }

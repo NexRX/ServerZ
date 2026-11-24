@@ -52,7 +52,7 @@ async fn create_steam(cx: &Cx, Form(input): Form<SteamDepot>) -> Result<SeeOther
 #[page]
 pub async fn setup_steam(cx: &Cx) -> Result<impl View> {
     Steam::ensure_unavailable(cx).await?;
-    let btn_state = match Depot::is_downloaded().await.unwrap_or_default() {
+    let btn_state = match Depot::is_depot_downloaded().await.unwrap_or_default() {
         true => DownloadProgressBtn::Done,
         false => DownloadProgressBtn::Enabled,
     };
@@ -64,7 +64,7 @@ pub async fn setup_steam(cx: &Cx) -> Result<impl View> {
             class="flex flex-col flex-1 items-center h-full gap-4"
         >
             download_progress(
-                downloader: Depot::downloader(),
+                downloader: Depot::depot_download(),
                 start: signal(cx, || false),
                 fieldset: (
                     "Required Download: Depot",
@@ -110,7 +110,7 @@ pub async fn depot_signin_qr(cx: &Cx) -> Result<impl View> {
                 };
             }
 
-            if !Depot::is_downloaded().await.map_err(Error::from_anyhow)? {
+            if !Depot::is_depot_downloaded().await.map_err(Error::from_anyhow)? {
                 return emit! {
                     steam_username()
                     <p class="text-error" role="alert">

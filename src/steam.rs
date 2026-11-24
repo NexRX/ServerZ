@@ -48,7 +48,7 @@ impl Guard for Steam {
     const REDIRECT_UNAVAILABLE: &str = "/setup/steam";
 
     async fn fetch_available(cx: &Cx) -> anyhow::Result<Self> {
-        ensure!(Depot::is_downloaded().await?, "Depot is not downloaded");
+        ensure!(Depot::is_depot_downloaded().await?, "Depot is not downloaded");
         Self::fetch(cx).await.map_err(Into::into)
     }
 }

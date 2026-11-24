@@ -2,7 +2,7 @@ use crate::components::{
     button::{ButtonType, button},
     fieldset::fieldset,
 };
-use crate::download::Downloader;
+use crate::download::HttpDownloader;
 use crate::tw;
 use crate::{components::progress::*, download::ReceiveLatest as _};
 use derive_more::IsVariant;
@@ -31,7 +31,7 @@ pub enum DownloadProgressBtn {
 #[component]
 pub async fn download_progress(
     cx: &Cx,
-    mut downloader: Downloader,
+    mut downloader: HttpDownloader,
     start: Signal<bool>,
     #[default]
     #[into]

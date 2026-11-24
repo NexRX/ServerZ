@@ -1,4 +1,4 @@
-use crate::{DATA_FOLDER, download::Downloader, steam::DepotAuthenticator};
+use crate::{DATA_FOLDER, download::HttpDownloader, steam::DepotAuthenticator};
 use anyhow::Result;
 use constcat::concat;
 use server_z_macros::{arch_alt, github_release_asset_bytes};
@@ -33,12 +33,12 @@ impl Depot {
         DepotAuthenticator::is_logged_in(username).await
     }
 
-    pub async fn is_downloaded() -> Result<bool> {
+    pub async fn is_depot_downloaded() -> Result<bool> {
         std::fs::exists(Depot::BINARY_FILEPATH).map_err(Into::into)
     }
 
-    pub fn downloader() -> Downloader {
-        Downloader::builder()
+    pub fn depot_download() -> HttpDownloader {
+        HttpDownloader::builder()
             .url(Depot::DOWNLOAD_ZIP_URL)
             .name(Depot::BINARY_FILENAME)
             .filename_in_archive(Depot::BINARY_FILENAME)
