@@ -172,7 +172,7 @@ pub async fn steam_username(
     Ok(view! {
         <input
             type="text"
-            class="invisible"
+            class="invisible h-0 w-0"
             name="steam_username"
             required="true"
             @invalid=$(async |_e: Event| {
