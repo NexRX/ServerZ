@@ -12,6 +12,7 @@ use crate::guard::Guard;
 use crate::steam::{DAYZ_SERVER_APPID, Steam};
 use crate::user::User;
 use toasty::Db;
+use topcoat::Error;
 use topcoat::cookie::CookieLayer;
 use topcoat::runtime::{Event, procedure};
 use topcoat::view::attributes;
@@ -25,7 +26,7 @@ use topcoat::{
     tailwind,
     view::{View, component, error_boundary, view},
 };
-use tracing::trace;
+use tracing::{instrument, trace};
 
 topcoat::router::not_found!();
 
@@ -88,9 +89,11 @@ async fn root(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
     })
 }
 
+#[instrument(level = "debug", skip_all, ret, err)]
 #[procedure]
 pub async fn app_manifest(cx: &Cx) -> Result<()> {
-    Steam::fetch(cx).await?.depot(SERVER_PATH).download_app(DAYZ_SERVER_APPID).await;
+    let depot = Steam::fetch(cx).await?.depot(SERVER_PATH);
+    depot.download_app(DAYZ_SERVER_APPID).await.map_err(Error::from_anyhow)?;
 
     Ok(())
 }

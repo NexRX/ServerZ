@@ -38,7 +38,7 @@ impl Depot {
             if line.contains("% depot") {
                 let mut split = line.split(' ');
                 let current: f32 = split
-                    .next()
+                    .nth(1)
                     .ok_or_else(|| anyhow!("no progress in line"))?
                     .replace("%", "")
                     .parse()
