@@ -1,6 +1,7 @@
+use super::{DownloadEvent, Downloader};
 use crate::TMP_FOLDER;
 use anyhow::{Result, bail};
-use derive_more::{Deref, DerefMut, Display, IsVariant};
+use derive_more::{Deref, DerefMut};
 use std::os::unix::fs::PermissionsExt;
 use std::sync::Arc;
 use std::{fmt::Debug, fs::File};
@@ -21,7 +22,7 @@ use tracing::{debug, info, instrument};
 use typed_builder::TypedBuilder;
 use zip::ZipArchive;
 
-#[derive(TypedBuilder)]
+#[derive(TypedBuilder, Clone)]
 pub struct HttpDownloader {
     #[builder(setter(into))]
     url: String,
@@ -30,7 +31,7 @@ pub struct HttpDownloader {
     #[builder(setter(into))]
     pub name: String,
     #[builder(setter(into))]
-    total_download_bytes: u128,
+    total_download_bytes: f32,
     #[builder(default, setter(strip_option, into))]
     filename_in_archive: Option<String>,
     #[builder(default = true, setter(into))]
@@ -38,25 +39,15 @@ pub struct HttpDownloader {
     #[builder(default = false, setter(into))]
     make_executable: bool,
 
-    #[builder(default, setter(skip))]
-    eventbus: Option<Sender<DownloadEvent>>,
-}
-
-#[derive(Debug, Clone, Display, IsVariant)]
-pub enum DownloadEvent {
-    #[display("Downloading '{name}', ({current} out of {total} bytes)")]
-    Downloading { name: Arc<str>, has_extract_step: bool, current: u128, total: u128 },
-    #[display("Extracting '{name}', ({current} out of {total} bytes)")]
-    Extracting { name: Arc<str>, current: u128, total: u128 },
-    #[display("Completed '{name}' ({total} bytes)")]
-    Completed { name: Arc<str>, total: u128 },
+    #[builder(default_code = "broadcast::channel(crate::STD_EVENT_BUFFER).0", setter(skip))]
+    eventbus: Sender<DownloadEvent>,
 }
 
 #[derive(Deref, DerefMut)]
 struct Publisher {
     name: Arc<str>,
     has_extract_step: bool,
-    total_download_bytes: u128,
+    total_download_bytes: f32,
     #[deref]
     #[deref_mut]
     inner: Sender<DownloadEvent>,
@@ -64,18 +55,6 @@ struct Publisher {
 
 /// Methods
 impl HttpDownloader {
-    pub fn has_extract_step(&self) -> bool {
-        self.filename_in_archive.is_some()
-    }
-
-    pub fn subscribe(&mut self) -> Receiver<DownloadEvent> {
-        self.eventbus.get_or_insert_with(|| broadcast::channel(crate::STD_EVENT_BUFFER).0).subscribe()
-    }
-
-    pub fn start_bg(self) {
-        tokio::spawn(self.start());
-    }
-
     #[instrument(level = "info", name = "Download::start", skip_all, fields(name = %self.name, url = %self.url), ret, err)]
     pub async fn start(self) -> Result<File> {
         info!("Starting");
@@ -114,13 +93,13 @@ impl HttpDownloader {
         Ok(file)
     }
 
-    fn publisher(&self) -> Option<Publisher> {
-        self.eventbus.as_ref().map(|eventbus| Publisher {
+    fn publisher(&self) -> Publisher {
+        Publisher {
             name: Arc::from(self.name.to_owned()),
             has_extract_step: self.filename_in_archive.is_some(),
             total_download_bytes: self.total_download_bytes,
-            inner: eventbus.clone(),
-        })
+            inner: self.eventbus.clone(),
+        }
     }
 }
 
@@ -148,18 +127,36 @@ pub trait ReceiveLatest<T: Clone> {
     }
 }
 
+impl Downloader for HttpDownloader {
+    fn subscribe(&self) -> Receiver<DownloadEvent> {
+        self.eventbus.subscribe()
+    }
+
+    fn start_bg(&self) {
+        tokio::spawn(self.clone().start());
+    }
+
+    fn has_extract_step(&self) -> bool {
+        self.filename_in_archive.is_some()
+    }
+
+    fn name(&self) -> String {
+        self.name.clone()
+    }
+}
+
 impl<T: Clone> ReceiveLatest<T> for Receiver<T> {
     fn receiver(&mut self) -> &mut Receiver<T> {
         self
     }
 }
 
-#[instrument(level = "debug", skip(pub_progress), ret, err)]
+#[instrument(level = "debug", skip(p), ret, err)]
 async fn extract(
     mut archive: ZipArchive<NamedTempFile>,
     filename_in_archive: impl ToString + Debug,
     to: impl ToString + Debug,
-    mut pub_progress: Option<Publisher>,
+    p: Publisher,
 ) -> Result<NamedTempFile> {
     let filename_in_archive = filename_in_archive.to_string();
     let to = to.to_string();
@@ -177,23 +174,21 @@ async fn extract(
             }
         };
 
-        let total = file.size() as u128;
-        let mut current: u128 = 0;
+        let total = file.size() as f32;
+        let mut current: f32 = 0f32;
 
         let mut tmp_file = NamedTempFile::new_in(TMP_FOLDER)?;
 
         loop {
             let mut buf = [0u8; 1024];
             let bytes_read = file.read(&mut buf)?;
-            current += bytes_read as u128;
+            current += bytes_read as f32;
 
-            if let Some(p) = pub_progress.as_mut() {
-                let event = match bytes_read {
-                    0 => DownloadEvent::Completed { name: Arc::clone(&p.name), total },
-                    _ => DownloadEvent::Extracting { name: Arc::clone(&p.name), current, total },
-                };
-                let _ = p.send(event);
-            }
+            let event = match bytes_read {
+                0 => DownloadEvent::Completed { name: Arc::clone(&p.name), total },
+                _ => DownloadEvent::Extracting { name: Arc::clone(&p.name), current, total },
+            };
+            let _ = p.send(event);
 
             if bytes_read == 0 {
                 break;
@@ -208,7 +203,7 @@ async fn extract(
 }
 
 #[instrument(level = "debug", skip_all, ret, err)]
-async fn download(url: impl ToString + Debug, mut pub_progress: Option<Publisher>) -> Result<NamedTempFile> {
+async fn download(url: impl ToString + Debug, p: Publisher) -> Result<NamedTempFile> {
     let url = url.to_string();
     let mut reader =
         match StreamDownload::new_http(url.parse()?, TempStorageProvider::new(), stream_download::Settings::default())
@@ -222,26 +217,25 @@ async fn download(url: impl ToString + Debug, mut pub_progress: Option<Publisher
 
     let download_file = spawn_blocking(move || {
         let mut tmp_file = NamedTempFile::new_in(TMP_FOLDER)?;
-        let mut current: u128 = 0;
+        let mut current: f32 = 0f32;
         loop {
             let mut buf = [0u8; 1024];
             let bytes_read = reader.read(&mut buf)?;
-            current += bytes_read as u128;
+            current += bytes_read as f32;
 
-            if let Some(p) = pub_progress.as_mut() {
-                let event = match bytes_read {
-                    0 if !p.has_extract_step => {
-                        DownloadEvent::Completed { name: Arc::clone(&p.name), total: p.total_download_bytes }
-                    }
-                    _ => DownloadEvent::Downloading {
-                        name: Arc::clone(&p.name),
-                        has_extract_step: p.has_extract_step,
-                        current,
-                        total: p.total_download_bytes,
-                    },
-                };
-                let _ = p.send(event);
-            }
+            let event = match bytes_read {
+                0 if !p.has_extract_step => {
+                    DownloadEvent::Completed { name: Arc::clone(&p.name), total: p.total_download_bytes }
+                }
+                _ => DownloadEvent::Downloading {
+                    name: Arc::clone(&p.name),
+                    current_file: Arc::clone(&p.name),
+                    has_extract_step: p.has_extract_step,
+                    current,
+                    total: p.total_download_bytes,
+                },
+            };
+            let _ = p.send(event);
 
             if bytes_read == 0 {
                 break;

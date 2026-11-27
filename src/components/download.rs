@@ -1,10 +1,13 @@
-use crate::components::{
-    button::{ButtonType, button},
-    fieldset::fieldset,
-};
 use crate::download::HttpDownloader;
 use crate::tw;
 use crate::{components::progress::*, download::ReceiveLatest as _};
+use crate::{
+    components::{
+        button::{ButtonType, button},
+        fieldset::fieldset,
+    },
+    download::Downloader,
+};
 use derive_more::IsVariant;
 use tokio::sync::broadcast::{
     Receiver,
@@ -31,7 +34,7 @@ pub enum DownloadProgressBtn {
 #[component]
 pub async fn download_progress(
     cx: &Cx,
-    mut downloader: HttpDownloader,
+    downloader: impl Downloader + Send,
     start: Signal<bool>,
     #[default]
     #[into]
@@ -49,7 +52,7 @@ pub async fn download_progress(
         (live! {
             let mut subscriber = downloader.subscribe();
             let has_extract = downloader.has_extract_step();
-            let name = downloader.name.clone();
+            let name = downloader.name();
 
             if started {
                 downloader.start_bg();
@@ -58,8 +61,8 @@ pub async fn download_progress(
             let initial = emit! {
                 download_progress_view(
                     name: &name,
-                    current: 0,
-                    total: 0,
+                    current: 0f32,
+                    total: 0f32,
                     has_extract: has_extract,
                     is_extract: false,
                     start: start.clone(),
@@ -82,6 +85,13 @@ pub async fn download_progress(
                     };
 
                     match event {
+                        crate::download::DownloadEvent::Failed { name, message } => break emit! {
+                            <p class="text-error" role="alert">
+                                (crate::download::DownloadEvent::Failed { name, message }.to_string(
+
+                                ))
+                            </p>
+                        },
                         crate::download::DownloadEvent::Downloading {
                             current,
                             total,
@@ -118,24 +128,22 @@ pub async fn download_progress(
                                 form_warning: form_warning.clone()
                             )
                         }?,
-                        crate::download::DownloadEvent::Completed { total, .. } => break Ok(
-                            emit! {
-                                download_progress_view(
-                                    name: &name,
-                                    current: total,
-                                    total: total,
-                                    has_extract: has_extract,
-                                    is_extract: has_extract,
-                                    start: start.clone(),
-                                    completed: true,
-                                    fieldset: fieldset,
-                                    start_button: start_button,
-                                    show_name: show_name,
-                                    form_marker: form_marker,
-                                    form_warning: form_warning.clone()
-                                )
-                            }?,
-                        ),
+                        crate::download::DownloadEvent::Completed { total, .. } => break emit! {
+                            download_progress_view(
+                                name: &name,
+                                current: total,
+                                total: total,
+                                has_extract: has_extract,
+                                is_extract: has_extract,
+                                start: start.clone(),
+                                completed: true,
+                                fieldset: fieldset,
+                                start_button: start_button,
+                                show_name: show_name,
+                                form_marker: form_marker,
+                                form_warning: form_warning.clone()
+                            )
+                        },
                     };
                 }
             }
@@ -147,8 +155,8 @@ pub async fn download_progress(
 async fn download_progress_view(
     cx: &Cx,
     name: &str,
-    current: u128,
-    total: u128,
+    current: f32,
+    total: f32,
     has_extract: bool,
     is_extract: bool,
     start: Signal<bool>,
@@ -203,8 +211,8 @@ async fn download_progress_view(
 async fn download_progress_content(
     cx: &Cx,
     name: &str,
-    current: u128,
-    total: u128,
+    current: f32,
+    total: f32,
     has_extract: bool,
     is_extract: bool,
     start: Signal<bool>,
@@ -217,8 +225,8 @@ async fn download_progress_content(
     Ok(view! {
         progress_bars(
             name: name,
-            current: if start_button.is_done() { 100 } else { current },
-            total: if start_button.is_done() { 100 } else { total },
+            current: if start_button.is_done() { 100f32 } else { current },
+            total: if start_button.is_done() { 100f32 } else { total },
             has_extract: has_extract,
             is_extract: is_extract || (start_button.is_done() && has_extract),
             inline: true,
@@ -278,12 +286,12 @@ async fn download_progress_content(
     })
 }
 
-fn readable_bytes(current: u128, total: u128, bits: bool) -> String {
+fn readable_bytes(current: f32, total: f32, bits: bool) -> String {
     const BYTE_UNITS: [&str; 6] = ["B", "KB", "MB", "GB", "TB", "PB"];
     const BIT_UNITS: [&str; 6] = ["b", "Kb", "Mb", "Gb", "Tb", "Pb"];
 
     let units = if bits { BIT_UNITS } else { BYTE_UNITS };
-    let (current, total) = if bits { (current * 8, total * 8) } else { (current, total) };
+    let (current, total) = if bits { (current * 8f32, total * 8f32) } else { (current, total) };
 
     let mut size = total as f64;
     let mut unit = 0;
@@ -307,19 +315,19 @@ fn readable_bytes(current: u128, total: u128, bits: bool) -> String {
 pub async fn progress_bars(
     cx: &Cx,
     name: &str,
-    current: u128,
-    total: u128,
+    current: f32,
+    total: f32,
     is_extract: bool,
     has_extract: bool,
     inline: bool,
     bytes: bool,
     show_name: bool,
 ) -> Result<impl View> {
-    let current_dl = if is_extract { 100 } else { current };
-    let current_ex = if is_extract { current } else { 0 };
+    let current_dl = if is_extract { 100f32 } else { current };
+    let current_ex = if is_extract { current } else { 0f32 };
 
-    let total_dl = if is_extract { 100 } else { total };
-    let total_ex = if is_extract { total } else { 100 };
+    let total_dl = if is_extract { 100f32 } else { total };
+    let total_ex = if is_extract { total } else { 100f32 };
 
     let is_done = if has_extract && is_extract { current_ex >= total_ex } else { current_dl >= total_dl };
     let done_txt = if is_done { "Persisted " } else { "" };
@@ -330,7 +338,7 @@ pub async fn progress_bars(
                 if show_name {
                     (&name)
                 }
-                if bytes && current != 100 && total != 100 {
+                if bytes && current != 100f32 && total != 100f32 {
                     <span class="text-xs font-mono text-base-content/66 ml-auto">
                         " ("
                         (done_txt)
@@ -358,7 +366,7 @@ pub async fn progress_bars(
 }
 
 #[component]
-async fn progress_bar(cx: &Cx, label: &str, value: u128, max: u128, inline: bool) -> Result<impl View> {
+async fn progress_bar(cx: &Cx, label: &str, value: f32, max: f32, inline: bool) -> Result<impl View> {
     Ok(view! {
         <div class="">
             <div
@@ -373,10 +381,10 @@ async fn progress_bar(cx: &Cx, label: &str, value: u128, max: u128, inline: bool
                     )
                 }
                 <label class="whitespace-pre">
-                    if value == 0 {
+                    if value == 0f32 {
                         (format!("{:>3}%", 0))
                     } else {
-                        (format!("{:>3}%", (value * 100 / max)))
+                        (format!("{:>3}%", (value * 100f32 / max)))
                     }
                 </label>
             </div>

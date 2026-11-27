@@ -1,5 +1,5 @@
 use crate::{DATA_FOLDER, download::HttpDownloader, steam::DepotAuthenticator};
-use anyhow::{Result, anyhow, bail, ensure};
+use anyhow::{Result, anyhow, bail};
 use constcat::concat;
 use server_z_macros::{arch_alt, github_release_asset_bytes};
 use std::{env::consts::OS, process::Stdio};
@@ -7,7 +7,7 @@ use tokio::{
     fs::{canonicalize, create_dir_all},
     io::{AsyncBufReadExt as _, BufReader, Lines},
     process::{Child, ChildStdout, Command},
-    sync::broadcast::{self, Sender},
+    sync::broadcast::{self, Receiver, Sender},
 };
 use tracing::instrument;
 
@@ -18,7 +18,7 @@ pub enum DepotDownloadEvent {
     Completed { total: u64, total_uncompressed: u64 },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Depot {
     steam_username: String,
     current_dir: String,
@@ -27,8 +27,17 @@ pub struct Depot {
 
 // Methods
 impl Depot {
+    pub fn subscribe(&self) -> Receiver<DepotDownloadEvent> {
+        self.eventbus.subscribe()
+    }
+
+    pub fn download_app(&self, app_id: u32) -> tokio::task::JoinHandle<Result<()>> {
+        let depot = self.clone();
+        tokio::spawn(async move { depot.download_app_impl(app_id).await })
+    }
+
     #[instrument(level = "debug", skip_all, err)]
-    pub async fn download_app(&self, app_id: u32) -> Result<()> {
+    async fn download_app_impl(&self, app_id: u32) -> Result<()> {
         let (mut child, mut lines) = self.spawn_app_dl(app_id, false).await?;
 
         while let Some(line) = lines.next_line().await? {
@@ -100,11 +109,12 @@ impl Depot {
 // Associated functions & constants
 impl Depot {
     // Binary
-    pub(super) const BINARY_FILENAME: &str = "DepotDownloader";
-    pub(super) const BINARY_FILEPATH: &str = concat!(DATA_FOLDER, "/bin/", Depot::BINARY_FILENAME);
+    pub const BINARY_FILENAME: &str = "DepotDownloader";
+    pub const BINARY_FILEPATH: &str = concat!(DATA_FOLDER, "/bin/", Depot::BINARY_FILENAME);
 
+    // DL
     const ZIP_FILENAME: &str = concat!("DepotDownloader-", OS, "-", arch_alt!(), ".zip");
-    const DOWNLOAD_ZIP_BYTES: u128 = github_release_asset_bytes!(
+    const DOWNLOAD_ZIP_BYTES: u32 = github_release_asset_bytes!(
         "https://github.com/SteamRE/DepotDownloader/releases/tag/DepotDownloader_3.4.0",
         "DepotDownloader-{OS}-{ARCH_ALT}.zip"
     );
@@ -138,7 +148,7 @@ impl Depot {
             .name(Depot::BINARY_FILENAME)
             .filename_in_archive(Depot::BINARY_FILENAME)
             .target(Depot::BINARY_FILEPATH)
-            .total_download_bytes(Depot::DOWNLOAD_ZIP_BYTES)
+            .total_download_bytes(Depot::DOWNLOAD_ZIP_BYTES as f32)
             .make_executable(true)
             .build()
     }

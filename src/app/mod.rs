@@ -6,16 +6,14 @@ pub mod showcase;
 use crate::app::setup::ensure_setup;
 use crate::components::prelude::*;
 use crate::dayz::SERVER_PATH;
-use crate::db::Singleton;
 use crate::features::app_menu::app_menu;
 use crate::guard::Guard;
 use crate::steam::{DAYZ_SERVER_APPID, Steam};
 use crate::user::User;
 use toasty::Db;
-use topcoat::Error;
 use topcoat::cookie::CookieLayer;
-use topcoat::runtime::{Event, procedure};
-use topcoat::view::attributes;
+use topcoat::runtime::signal;
+
 use topcoat::{
     Result,
     asset::{AssetBundle, RouterBuilderAssetExt},
@@ -26,7 +24,7 @@ use topcoat::{
     tailwind,
     view::{View, component, error_boundary, view},
 };
-use tracing::{instrument, trace};
+use tracing::trace;
 
 topcoat::router::not_found!();
 
@@ -89,27 +87,21 @@ async fn root(cx: &Cx, slot: Slot<'_>) -> Result<impl View> {
     })
 }
 
-#[instrument(level = "debug", skip_all, ret, err)]
-#[procedure]
-pub async fn app_manifest(cx: &Cx) -> Result<()> {
-    let depot = Steam::fetch(cx).await?.depot(SERVER_PATH);
-    depot.download_app(DAYZ_SERVER_APPID).await.map_err(Error::from_anyhow)?;
-
-    Ok(())
-}
-
 #[page]
 pub async fn home(cx: &Cx) -> Result<impl View> {
+    let steam = Steam::require(cx).await?;
+
     Ok(view! {
         <main class="mx-auto max-w-2xl px-4 py-16">
-            "hi"
-            button(
-                attrs: attributes!(
-                    @click=$(async |_e: Event| {
-                        app_manifest().await;
-                    })
+            download_progress(
+                downloader: steam.download_app(DAYZ_SERVER_APPID, SERVER_PATH),
+                start: signal(cx, || false),
+                fieldset: (
+                    "Required Download: DayZ Server",
+                    "Install the DayZ Server to get your server up and running first",
                 ),
-                "Button"
+                start_button: DownloadProgressBtn::Enabled,
+                form_marker: "depot_downloaded"
             )
         </main>
     })

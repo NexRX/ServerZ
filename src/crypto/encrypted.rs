@@ -1,4 +1,3 @@
-use super::{Secret, store};
 use crate::crypto::{ENCRYPTION_KEY_PATH, load_bytes};
 use anyhow::{anyhow, ensure};
 use chacha20poly1305::{
@@ -7,6 +6,8 @@ use chacha20poly1305::{
 };
 use std::{fmt::Debug, fs, io::ErrorKind, path::Path};
 use toasty::Embed;
+
+pub const ENCRYPTION_KEY_PATH: &str = concat!(crate::DATA_FOLDER, "/encryption.key");
 
 #[derive(Clone, Embed)]
 pub struct Encrypted {

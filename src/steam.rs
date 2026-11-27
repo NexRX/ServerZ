@@ -5,6 +5,7 @@ pub use depot::*;
 pub use depot_auth::*;
 use tracing::instrument;
 
+use crate::download::DepotAppDownload;
 use crate::{DATA_FOLDER, db::Singleton, guard::Guard};
 use anyhow::Result;
 use anyhow::ensure;
@@ -33,6 +34,14 @@ pub struct Steam {
 impl Steam {
     pub fn depot(&self, current_dir: impl ToString) -> Depot {
         Depot::new(&self.steam_username, current_dir)
+    }
+
+    pub fn download_app(&self, app_id: u32, current_dir: impl ToString) -> DepotAppDownload {
+        DepotAppDownload::builder()
+            .app_id(app_id)
+            .current_dir(current_dir.to_string())
+            .steam_username(&self.steam_username)
+            .build()
     }
 
     #[instrument(level = "trace", skip_all, ret, err)]

@@ -1,17 +1,14 @@
-mod encrypted;
+// mod encrypted;
 mod secret;
 
-pub use encrypted::*;
+// pub use encrypted::*;
 pub use secret::*;
 
 use anyhow::ensure;
-use constcat::concat;
 use std::fs::{self, OpenOptions};
 use std::io::Write;
 use std::os::unix::fs::OpenOptionsExt;
 use std::path::Path;
-
-pub const ENCRYPTION_KEY_PATH: &str = concat!(crate::DATA_FOLDER, "/encryption.key");
 
 fn store(value: impl AsRef<[u8]>, path: impl AsRef<Path>, allow_group: bool) -> anyhow::Result<()> {
     const OWNER_ONLY: u32 = 0o600;
@@ -33,10 +30,12 @@ fn store(value: impl AsRef<[u8]>, path: impl AsRef<Path>, allow_group: bool) -> 
     Ok(())
 }
 
+#[allow(dead_code)]
 fn load(path: impl AsRef<Path>) -> anyhow::Result<String> {
     fs::read_to_string(path).map_err(Into::into)
 }
 
+#[allow(dead_code)]
 fn load_bytes(path: impl AsRef<Path>) -> anyhow::Result<Vec<u8>> {
     fs::read(path).map_err(Into::into)
 }

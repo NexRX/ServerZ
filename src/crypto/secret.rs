@@ -1,4 +1,3 @@
-use super::{load, store};
 use argon2::Argon2;
 use derive_more::{Deref, DerefMut, Display};
 use garde::Validate;
@@ -62,11 +61,13 @@ impl Secret {
 }
 
 impl Secret {
+    #[allow(dead_code)]
     pub fn store(&self, path: impl AsRef<Path>, allow_group: bool) -> anyhow::Result<()> {
-        store(&self.0, path, allow_group)
+        super::store(&self.0, path, allow_group)
     }
 
+    #[allow(dead_code)]
     pub fn load(path: impl AsRef<Path>) -> anyhow::Result<Self> {
-        load(path).map(Self)
+        super::load(path).map(Self)
     }
 }
